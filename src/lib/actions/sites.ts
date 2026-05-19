@@ -11,7 +11,7 @@ const siteSchema = z.object({
   data_inicio: z.string().optional(),
   data_fim_prevista: z.string().optional(),
   valor: z.string().optional(),
-  estado: z.enum(['em_curso', 'concluida', 'pausada']).default('em_curso'),
+  estado: z.enum(['por_comecar', 'em_curso', 'concluida', 'pausada']).default('por_comecar'),
   notas: z.string().optional(),
 })
 

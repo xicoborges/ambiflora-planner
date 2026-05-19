@@ -12,11 +12,7 @@ import type { Database } from '@/types/database'
 
 type Worker = Database['public']['Tables']['workers']['Row']
 
-interface WorkerFormProps {
-  worker?: Worker
-}
-
-export function WorkerForm({ worker }: WorkerFormProps) {
+export function WorkerForm({ worker }: { worker?: Worker }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -48,15 +44,15 @@ export function WorkerForm({ worker }: WorkerFormProps) {
           <Input id="cargo" name="cargo" defaultValue={worker?.cargo ?? ''} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="telefone">Telefone</Label>
-          <Input id="telefone" name="telefone" defaultValue={worker?.telefone ?? ''} />
+          <Label htmlFor="responsavel">Pessoa Responsável</Label>
+          <Input id="responsavel" name="responsavel" defaultValue={worker?.responsavel ?? ''} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" defaultValue={worker?.email ?? ''} />
+          <Label htmlFor="telefone">Telefone</Label>
+          <Input id="telefone" name="telefone" defaultValue={worker?.telefone ?? ''} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="data_admissao">Data de Admissão</Label>

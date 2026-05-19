@@ -52,13 +52,14 @@ export function SiteForm({ site }: { site?: Site }) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="estado">Estado</Label>
-          <Select name="estado" defaultValue={site?.estado ?? 'em_curso'}>
+          <Select name="estado" defaultValue={site?.estado ?? 'por_comecar'}>
             <SelectTrigger id="estado">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="por_comecar">Por Começar</SelectItem>
               <SelectItem value="em_curso">Em Curso</SelectItem>
-              <SelectItem value="pausada">Pausada</SelectItem>
+              <SelectItem value="pausada">Em Pausa</SelectItem>
               <SelectItem value="concluida">Concluída</SelectItem>
             </SelectContent>
           </Select>
@@ -66,7 +67,7 @@ export function SiteForm({ site }: { site?: Site }) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="morada">Morada</Label>
+        <Label htmlFor="morada">Local</Label>
         <Input id="morada" name="morada" defaultValue={site?.morada ?? ''} />
       </div>
 

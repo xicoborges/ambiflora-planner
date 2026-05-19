@@ -6,9 +6,9 @@ import { z } from 'zod'
 
 const workerSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
-  telefone: z.string().optional(),
-  email: z.string().email('Email inválido').optional().or(z.literal('')),
   cargo: z.string().optional(),
+  responsavel: z.string().optional(),
+  telefone: z.string().optional(),
   data_admissao: z.string().optional(),
   notas: z.string().optional(),
 })
@@ -21,9 +21,9 @@ export async function createWorker(formData: FormData) {
 
   const data = {
     ...parsed.data,
-    email: parsed.data.email || null,
-    telefone: parsed.data.telefone || null,
     cargo: parsed.data.cargo || null,
+    responsavel: parsed.data.responsavel || null,
+    telefone: parsed.data.telefone || null,
     data_admissao: parsed.data.data_admissao || null,
     notas: parsed.data.notas || null,
   }
@@ -43,9 +43,9 @@ export async function updateWorker(id: string, formData: FormData) {
 
   const data = {
     ...parsed.data,
-    email: parsed.data.email || null,
-    telefone: parsed.data.telefone || null,
     cargo: parsed.data.cargo || null,
+    responsavel: parsed.data.responsavel || null,
+    telefone: parsed.data.telefone || null,
     data_admissao: parsed.data.data_admissao || null,
     notas: parsed.data.notas || null,
   }
@@ -67,7 +67,6 @@ export async function toggleWorkerAtivo(id: string, ativo: boolean) {
 
 export async function deleteWorker(id: string) {
   const supabase = await createClient()
-  // team_members tem ON DELETE CASCADE, então apaga automaticamente
   const { error } = await supabase.from('workers').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/trabalhadores')

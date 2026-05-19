@@ -7,7 +7,8 @@ export async function upsertAssignment(input: {
   id?: string
   data: string
   periodo: 'manha' | 'tarde'
-  team_id: string
+  team_id?: string | null
+  worker_id?: string | null
   site_id: string
   notas: string
   equipment_ids: string[]
@@ -52,7 +53,8 @@ export async function upsertAssignment(input: {
 export async function bulkCreateAssignments(input: {
   data: string
   periodo: 'manha' | 'tarde'
-  team_id: string
+  team_id?: string | null
+  worker_id?: string | null
   site_id: string
   notas: string
   equipment_ids: string[]

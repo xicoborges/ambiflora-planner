@@ -17,10 +17,12 @@ export type Assignment = {
   id: string
   data: string
   periodo: 'manha' | 'tarde'
-  team_id: string
+  team_id: string | null
+  worker_id: string | null
   site_id: string
   notas: string | null
   teams: { id: string; nome: string; cor: string } | null
+  workers: { id: string; nome: string } | null
   sites: { id: string; nome: string } | null
   assignment_equipment: { equipment_id: string }[]
 }
@@ -79,7 +81,9 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
       if (filterSite && a.site_id !== filterSite) return false
       if (filterWorker) {
         const workerTeamIds = workerTeams[filterWorker] ?? new Set()
-        if (!workerTeamIds.has(a.team_id)) return false
+        const matchesViaTeam = a.team_id != null && workerTeamIds.has(a.team_id)
+        const matchesDirectly = a.worker_id === filterWorker
+        if (!matchesViaTeam && !matchesDirectly) return false
       }
       return true
     })
@@ -252,10 +256,10 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
                                   key={a.id}
                                   onClick={e => { e.stopPropagation(); openEdit(a) }}
                                   className="w-full text-left text-[10px] font-medium rounded px-1 py-0.5 truncate text-white hover:opacity-80 transition-opacity"
-                                  style={{ backgroundColor: a.teams?.cor ?? '#6B7280' }}
-                                  title={`${a.teams?.nome} — ${a.sites?.nome}`}
+                                  style={{ backgroundColor: a.teams?.cor ?? '#6366f1' }}
+                                  title={`${a.teams?.nome ?? a.workers?.nome} — ${a.sites?.nome}`}
                                 >
-                                  {a.teams?.nome}
+                                  {a.teams?.nome ?? a.workers?.nome}
                                 </button>
                               ))}
                             </div>
@@ -290,6 +294,7 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
         teams={teams}
         sites={sites}
         equipment={equipment}
+        workers={workers}
         existingAssignments={assignments}
       />
 
@@ -302,6 +307,7 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
         teams={teams}
         sites={sites}
         equipment={equipment}
+        workers={workers}
         existingAssignments={assignments}
       />
     </div>

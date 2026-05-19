@@ -23,6 +23,7 @@ interface Props {
   teams: { id: string; nome: string; cor: string }[]
   sites: { id: string; nome: string }[]
   equipment: { id: string; nome: string }[]
+  workers: { id: string; nome: string }[]
   existingAssignments: Assignment[]
 }
 
@@ -33,10 +34,12 @@ function formatDatePT(dateStr: string) {
 
 export function AssignmentModal({
   open, onOpenChange, selectedCell, selectedAssignment,
-  teams, sites, equipment, existingAssignments,
+  teams, sites, equipment, workers, existingAssignments,
 }: Props) {
   const [isPending, startTransition] = useTransition()
+  const [mode, setMode] = useState<'equipa' | 'trabalhador'>('equipa')
   const [teamId, setTeamId] = useState('')
+  const [workerId, setWorkerId] = useState('')
   const [siteId, setSiteId] = useState('')
   const [notas, setNotas] = useState('')
   const [equipmentIds, setEquipmentIds] = useState<string[]>([])
@@ -45,14 +48,16 @@ export function AssignmentModal({
 
   useEffect(() => {
     if (open) {
+      const hasWorker = !!selectedAssignment?.worker_id
+      setMode(hasWorker ? 'trabalhador' : 'equipa')
       setTeamId(selectedAssignment?.team_id ?? '')
+      setWorkerId(selectedAssignment?.worker_id ?? '')
       setSiteId(selectedAssignment?.site_id ?? '')
       setNotas(selectedAssignment?.notas ?? '')
       setEquipmentIds(selectedAssignment?.assignment_equipment.map(e => e.equipment_id) ?? [])
     }
   }, [open, selectedAssignment])
 
-  // Outras alocações no mesmo dia+período (exceto a que está a ser editada)
   const conflictingAssignments = existingAssignments.filter(a =>
     selectedCell &&
     a.data === selectedCell.data &&
@@ -60,32 +65,37 @@ export function AssignmentModal({
     a.id !== selectedAssignment?.id
   )
 
-  // Equipas já ocupadas neste período
-  const occupiedTeamIds = new Set(conflictingAssignments.map(a => a.team_id))
-
-  // Equipamentos já ocupados neste período
+  const occupiedTeamIds = new Set(conflictingAssignments.map(a => a.team_id).filter(Boolean))
+  const occupiedWorkerIds = new Set(conflictingAssignments.map(a => a.worker_id).filter(Boolean))
   const occupiedEquipmentIds = new Set(
     conflictingAssignments.flatMap(a => a.assignment_equipment.map(e => e.equipment_id))
   )
 
-  // Conflito de equipa: a equipa selecionada já está alocada neste período
-  const teamConflict = teamId && occupiedTeamIds.has(teamId)
+  const teamConflict = mode === 'equipa' && teamId && occupiedTeamIds.has(teamId)
     ? conflictingAssignments.find(a => a.team_id === teamId)
     : null
 
+  const workerConflict = mode === 'trabalhador' && workerId && occupiedWorkerIds.has(workerId)
+    ? conflictingAssignments.find(a => a.worker_id === workerId)
+    : null
+
   function toggleEquipment(id: string) {
-    setEquipmentIds(prev =>
-      prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]
-    )
+    setEquipmentIds(prev => prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id])
   }
 
   function handleSubmit() {
-    if (!selectedCell || !teamId || !siteId) {
-      toast.error('Escolhe a equipa e a obra')
+    if (!selectedCell || !siteId) {
+      toast.error('Escolhe a obra')
       return
     }
+    if (mode === 'equipa' && !teamId) { toast.error('Escolhe a equipa'); return }
+    if (mode === 'trabalhador' && !workerId) { toast.error('Escolhe o trabalhador'); return }
     if (teamConflict) {
       toast.error(`Esta equipa já está alocada à obra "${teamConflict.sites?.nome}" neste período`)
+      return
+    }
+    if (workerConflict) {
+      toast.error(`Este trabalhador já está alocado à obra "${workerConflict.sites?.nome}" neste período`)
       return
     }
     startTransition(async () => {
@@ -93,7 +103,8 @@ export function AssignmentModal({
         id: selectedAssignment?.id,
         data: selectedCell.data,
         periodo: selectedCell.periodo,
-        team_id: teamId,
+        team_id: mode === 'equipa' ? teamId : null,
+        worker_id: mode === 'trabalhador' ? workerId : null,
         site_id: siteId,
         notas,
         equipment_ids: equipmentIds,
@@ -122,6 +133,13 @@ export function AssignmentModal({
 
   if (!selectedCell) return null
 
+  const hasConflict = !!teamConflict || !!workerConflict
+  const conflictMsg = teamConflict
+    ? `Esta equipa já está alocada à obra "${teamConflict.sites?.nome}" neste período.`
+    : workerConflict
+    ? `Este trabalhador já está alocado à obra "${workerConflict.sites?.nome}" neste período.`
+    : null
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -133,35 +151,76 @@ export function AssignmentModal({
         </DialogHeader>
 
         <div className="space-y-3 py-1">
-          {/* Equipa */}
-          <div className="space-y-1">
-            <Label>Equipa *</Label>
-            <Select value={teamId} onValueChange={v => setTeamId(v ?? '')}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Escolher equipa..." />
-              </SelectTrigger>
-              <SelectContent>
-                {teams.map(t => {
-                  const occupied = occupiedTeamIds.has(t.id) && t.id !== selectedAssignment?.team_id
-                  return (
-                    <SelectItem key={t.id} value={t.id} disabled={occupied}>
-                      <span className="flex items-center gap-2">
-                        <span className="h-3 w-3 rounded-full inline-block shrink-0" style={{ backgroundColor: t.cor }} />
-                        {t.nome}
-                        {occupied && <span className="text-xs text-red-500 ml-1">Ocupada</span>}
-                      </span>
-                    </SelectItem>
-                  )
-                })}
-              </SelectContent>
-            </Select>
-            {teamConflict && (
-              <div className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
-                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                Esta equipa já está alocada à obra <strong>{teamConflict.sites?.nome}</strong> neste período.
-              </div>
-            )}
+          {/* Toggle Equipa / Trabalhador */}
+          <div className="flex rounded-lg border overflow-hidden text-sm">
+            <button
+              type="button"
+              onClick={() => setMode('equipa')}
+              className={`flex-1 py-1.5 font-medium transition-colors ${mode === 'equipa' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50 text-slate-600'}`}
+            >
+              Equipa
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('trabalhador')}
+              className={`flex-1 py-1.5 font-medium transition-colors border-l ${mode === 'trabalhador' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50 text-slate-600'}`}
+            >
+              Trabalhador
+            </button>
           </div>
+
+          {/* Equipa ou Trabalhador */}
+          {mode === 'equipa' ? (
+            <div className="space-y-1">
+              <Label>Equipa *</Label>
+              <Select value={teamId} onValueChange={v => setTeamId(v ?? '')}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Escolher equipa..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.map(t => {
+                    const occupied = occupiedTeamIds.has(t.id) && t.id !== selectedAssignment?.team_id
+                    return (
+                      <SelectItem key={t.id} value={t.id} disabled={occupied}>
+                        <span className="flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full inline-block shrink-0" style={{ backgroundColor: t.cor }} />
+                          {t.nome}
+                          {occupied && <span className="text-xs text-red-500 ml-1">Ocupada</span>}
+                        </span>
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <Label>Trabalhador *</Label>
+              <Select value={workerId} onValueChange={v => setWorkerId(v ?? '')}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Escolher trabalhador..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {workers.map(w => {
+                    const occupied = occupiedWorkerIds.has(w.id) && w.id !== selectedAssignment?.worker_id
+                    return (
+                      <SelectItem key={w.id} value={w.id} disabled={occupied}>
+                        {w.nome}
+                        {occupied && <span className="text-xs text-red-500 ml-1">Ocupado</span>}
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {conflictMsg && (
+            <div className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              {conflictMsg}
+            </div>
+          )}
 
           {/* Obra */}
           <div className="space-y-1">
@@ -184,7 +243,7 @@ export function AssignmentModal({
             {equipment.length === 0 ? (
               <p className="text-xs text-gray-400 py-1">
                 Nenhum equipamento registado.{' '}
-                <a href="/equipamentos/novo" className="underline text-green-700">Adicionar equipamento</a>
+                <a href="/equipamentos/novo" className="underline text-primary">Adicionar equipamento</a>
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
@@ -198,7 +257,7 @@ export function AssignmentModal({
                         occupied && !checked
                           ? 'opacity-40 cursor-not-allowed bg-gray-50'
                           : checked
-                          ? 'border-green-600 bg-green-50 text-green-800'
+                          ? 'border-primary bg-primary/5 text-primary'
                           : 'hover:bg-gray-50'
                       }`}
                     >
@@ -207,7 +266,7 @@ export function AssignmentModal({
                         checked={checked}
                         disabled={occupied && !checked}
                         onChange={() => !occupied && toggleEquipment(eq.id)}
-                        className="accent-green-600"
+                        className="accent-primary"
                       />
                       <span className="truncate">{eq.nome}</span>
                       {occupied && !checked && (
@@ -223,12 +282,7 @@ export function AssignmentModal({
           {/* Notas */}
           <div className="space-y-1">
             <Label>Notas</Label>
-            <Textarea
-              rows={2}
-              value={notas}
-              onChange={e => setNotas(e.target.value)}
-              placeholder="Observações opcionais..."
-            />
+            <Textarea rows={2} value={notas} onChange={e => setNotas(e.target.value)} placeholder="Observações opcionais..." />
           </div>
         </div>
 
@@ -239,7 +293,11 @@ export function AssignmentModal({
             </Button>
           )}
           <DialogClose render={<Button variant="outline" size="sm" />}>Cancelar</DialogClose>
-          <Button size="sm" disabled={isPending || !teamId || !siteId || !!teamConflict} onClick={handleSubmit}>
+          <Button
+            size="sm"
+            disabled={isPending || !siteId || (mode === 'equipa' ? !teamId : !workerId) || hasConflict}
+            onClick={handleSubmit}
+          >
             {isPending ? 'A guardar...' : isEdit ? 'Guardar' : 'Criar Alocação'}
           </Button>
         </DialogFooter>

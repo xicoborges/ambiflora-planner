@@ -57,17 +57,20 @@ interface Props {
   teams: { id: string; nome: string; cor: string }[]
   sites: { id: string; nome: string }[]
   equipment: { id: string; nome: string }[]
+  workers: { id: string; nome: string }[]
   existingAssignments: Assignment[]
 }
 
-export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipment, existingAssignments }: Props) {
+export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipment, workers, existingAssignments }: Props) {
   const today = new Date().toISOString().split('T')[0]
 
+  const [mode, setMode] = useState<'equipa' | 'trabalhador'>('equipa')
   const [startDate, setStartDate] = useState(today)
   const [startPeriodo, setStartPeriodo] = useState<'manha' | 'tarde'>('manha')
   const [endDate, setEndDate] = useState(today)
   const [endPeriodo, setEndPeriodo] = useState<'manha' | 'tarde'>('tarde')
   const [teamId, setTeamId] = useState('')
+  const [workerId, setWorkerId] = useState('')
   const [siteId, setSiteId] = useState('')
   const [notas, setNotas] = useState('')
   const [equipmentIds, setEquipmentIds] = useState<string[]>([])
@@ -75,11 +78,13 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
   const [isPending, startTransition] = useTransition()
 
   function reset() {
+    setMode('equipa')
     setStartDate(today)
     setStartPeriodo('manha')
     setEndDate(today)
     setEndPeriodo('tarde')
     setTeamId('')
+    setWorkerId('')
     setSiteId('')
     setNotas('')
     setEquipmentIds([])
@@ -96,15 +101,18 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
     [startDate, startPeriodo, endDate, endPeriodo]
   )
 
+  const activeId = mode === 'equipa' ? teamId : workerId
+
   const conflicts: ConflictInfo[] = useMemo(() => {
-    if (!teamId) return []
+    if (!activeId) return []
     return periods.flatMap(p => {
-      const existing = existingAssignments.find(
-        a => a.data === p.data && a.periodo === p.periodo && a.team_id === teamId
+      const existing = existingAssignments.find(a =>
+        a.data === p.data && a.periodo === p.periodo &&
+        (mode === 'equipa' ? a.team_id === activeId : a.worker_id === activeId)
       )
       return existing ? [{ ...p, existingSiteName: existing.sites?.nome ?? '?' }] : []
     })
-  }, [periods, teamId, existingAssignments])
+  }, [periods, activeId, mode, existingAssignments])
 
   const periodsToCreate = useMemo(() => {
     const keys = new Set(conflicts.map(c => `${c.data}|${c.periodo}`))
@@ -116,7 +124,9 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
   }
 
   function handleVerificar() {
-    if (!teamId || !siteId) { toast.error('Escolhe a equipa e a obra'); return }
+    if (!siteId) { toast.error('Escolhe a obra'); return }
+    if (mode === 'equipa' && !teamId) { toast.error('Escolhe a equipa'); return }
+    if (mode === 'trabalhador' && !workerId) { toast.error('Escolhe o trabalhador'); return }
     if (periods.length === 0) { toast.error('O intervalo de datas não é válido'); return }
     if (conflicts.length > 0) { setStep('confirm'); return }
     doCreate()
@@ -128,7 +138,8 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
         periodsToCreate.map(p => ({
           data: p.data,
           periodo: p.periodo,
-          team_id: teamId,
+          team_id: mode === 'equipa' ? teamId : null,
+          worker_id: mode === 'trabalhador' ? workerId : null,
           site_id: siteId,
           notas,
           equipment_ids: equipmentIds,
@@ -183,23 +194,49 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
               </div>
             </div>
 
-            {/* Equipa */}
-            <div className="space-y-1.5">
-              <Label>Equipa *</Label>
-              <Select value={teamId} onValueChange={v => setTeamId(v ?? '')}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Escolher equipa..." /></SelectTrigger>
-                <SelectContent>
-                  {teams.map(t => (
-                    <SelectItem key={t.id} value={t.id}>
-                      <span className="flex items-center gap-2">
-                        <span className="h-3 w-3 rounded-full inline-block shrink-0" style={{ backgroundColor: t.cor }} />
-                        {t.nome}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Toggle Equipa / Trabalhador */}
+            <div className="flex rounded-lg border overflow-hidden text-sm">
+              <button type="button" onClick={() => setMode('equipa')}
+                className={`flex-1 py-1.5 font-medium transition-colors ${mode === 'equipa' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50 text-slate-600'}`}>
+                Equipa
+              </button>
+              <button type="button" onClick={() => setMode('trabalhador')}
+                className={`flex-1 py-1.5 font-medium transition-colors border-l ${mode === 'trabalhador' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50 text-slate-600'}`}>
+                Trabalhador
+              </button>
             </div>
+
+            {/* Equipa ou Trabalhador */}
+            {mode === 'equipa' ? (
+              <div className="space-y-1.5">
+                <Label>Equipa *</Label>
+                <Select value={teamId} onValueChange={v => setTeamId(v ?? '')}>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Escolher equipa..." /></SelectTrigger>
+                  <SelectContent>
+                    {teams.map(t => (
+                      <SelectItem key={t.id} value={t.id}>
+                        <span className="flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full inline-block shrink-0" style={{ backgroundColor: t.cor }} />
+                          {t.nome}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label>Trabalhador *</Label>
+                <Select value={workerId} onValueChange={v => setWorkerId(v ?? '')}>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Escolher trabalhador..." /></SelectTrigger>
+                  <SelectContent>
+                    {workers.map(w => (
+                      <SelectItem key={w.id} value={w.id}>{w.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Obra */}
             <div className="space-y-1.5">

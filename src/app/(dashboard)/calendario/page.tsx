@@ -27,7 +27,7 @@ export default async function CalendarioPage({
   ] = await Promise.all([
     supabase
       .from('assignments')
-      .select('id, data, periodo, team_id, site_id, notas, teams(id, nome, cor), sites(id, nome), assignment_equipment(equipment_id)')
+      .select('id, data, periodo, team_id, worker_id, site_id, notas, teams(id, nome, cor), workers(id, nome), sites(id, nome), assignment_equipment(equipment_id)')
       .gte('data', startDate)
       .lte('data', endDate),
     supabase.from('teams').select('id, nome, cor').eq('ativo', true).order('nome'),

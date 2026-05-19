@@ -6,16 +6,18 @@ export type Database = {
       workers: {
         Row: {
           id: string; nome: string; telefone: string | null; email: string | null
-          cargo: string | null; data_admissao: string | null; ativo: boolean
-          notas: string | null; created_at: string; updated_at: string
+          cargo: string | null; responsavel: string | null; data_admissao: string | null
+          ativo: boolean; notas: string | null; created_at: string; updated_at: string
         }
         Insert: {
           id?: string; nome: string; telefone?: string | null; email?: string | null
-          cargo?: string | null; data_admissao?: string | null; ativo?: boolean; notas?: string | null
+          cargo?: string | null; responsavel?: string | null; data_admissao?: string | null
+          ativo?: boolean; notas?: string | null
         }
         Update: {
           id?: string; nome?: string; telefone?: string | null; email?: string | null
-          cargo?: string | null; data_admissao?: string | null; ativo?: boolean; notas?: string | null
+          cargo?: string | null; responsavel?: string | null; data_admissao?: string | null
+          ativo?: boolean; notas?: string | null
         }
         Relationships: []
       }
@@ -67,36 +69,40 @@ export type Database = {
         Row: {
           id: string; nome: string; cliente: string | null; morada: string | null
           data_inicio: string | null; data_fim_prevista: string | null; valor: number | null
-          estado: 'em_curso' | 'concluida' | 'pausada'; notas: string | null
+          estado: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada'; notas: string | null
           created_at: string; updated_at: string
         }
         Insert: {
           id?: string; nome: string; cliente?: string | null; morada?: string | null
           data_inicio?: string | null; data_fim_prevista?: string | null; valor?: number | null
-          estado?: 'em_curso' | 'concluida' | 'pausada'; notas?: string | null
+          estado?: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada'; notas?: string | null
         }
         Update: {
           id?: string; nome?: string; cliente?: string | null; morada?: string | null
           data_inicio?: string | null; data_fim_prevista?: string | null; valor?: number | null
-          estado?: 'em_curso' | 'concluida' | 'pausada'; notas?: string | null
+          estado?: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada'; notas?: string | null
         }
         Relationships: []
       }
       assignments: {
         Row: {
-          id: string; data: string; periodo: 'manha' | 'tarde'; team_id: string; site_id: string
+          id: string; data: string; periodo: 'manha' | 'tarde'
+          team_id: string | null; worker_id: string | null; site_id: string
           notas: string | null; created_at: string; updated_at: string
         }
         Insert: {
-          id?: string; data: string; periodo: 'manha' | 'tarde'; team_id: string; site_id: string
+          id?: string; data: string; periodo: 'manha' | 'tarde'
+          team_id?: string | null; worker_id?: string | null; site_id: string
           notas?: string | null
         }
         Update: {
-          id?: string; data?: string; periodo?: 'manha' | 'tarde'; team_id?: string; site_id?: string
+          id?: string; data?: string; periodo?: 'manha' | 'tarde'
+          team_id?: string | null; worker_id?: string | null; site_id?: string
           notas?: string | null
         }
         Relationships: [
           { foreignKeyName: "assignments_team_id_fkey"; columns: ["team_id"]; isOneToOne: false; referencedRelation: "teams"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignments_worker_id_fkey"; columns: ["worker_id"]; isOneToOne: false; referencedRelation: "workers"; referencedColumns: ["id"] },
           { foreignKeyName: "assignments_site_id_fkey"; columns: ["site_id"]; isOneToOne: false; referencedRelation: "sites"; referencedColumns: ["id"] }
         ]
       }
@@ -113,7 +119,7 @@ export type Database = {
     Views: Record<string, never>
     Functions: Record<string, never>
     Enums: {
-      site_estado: 'em_curso' | 'concluida' | 'pausada'
+      site_estado: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada'
       assignment_periodo: 'manha' | 'tarde'
     }
     CompositeTypes: Record<string, never>

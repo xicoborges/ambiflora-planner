@@ -5,15 +5,17 @@ import { Button } from '@/components/ui/button'
 import { SiteActions } from './site-actions'
 
 const estadoLabel: Record<string, string> = {
+  por_comecar: 'Por Começar',
   em_curso: 'Em Curso',
+  pausada: 'Em Pausa',
   concluida: 'Concluída',
-  pausada: 'Pausada',
 }
 
 const estadoClass: Record<string, string> = {
+  por_comecar: 'bg-slate-100 text-slate-500 border border-slate-200',
   em_curso: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  concluida: 'bg-slate-100 text-slate-600 border border-slate-200',
   pausada: 'bg-amber-50 text-amber-700 border border-amber-200',
+  concluida: 'bg-sky-50 text-sky-700 border border-sky-200',
 }
 
 export default async function ObrasPage() {

@@ -21,7 +21,7 @@ export function SiteActions({ site }: { site: Site }) {
   const [updating, startUpdate] = useTransition()
   const [deleteOpen, setDeleteOpen] = useState(false)
 
-  function handleEstado(novoEstado: 'em_curso' | 'concluida' | 'pausada') {
+  function handleEstado(novoEstado: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada') {
     startUpdate(async () => {
       const supabase = createClient()
       const { error } = await supabase.from('sites').update({ estado: novoEstado }).eq('id', site.id)
@@ -41,19 +41,24 @@ export function SiteActions({ site }: { site: Site }) {
             <Pencil className="h-4 w-4 mr-2" />Editar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          {site.estado !== 'por_comecar' && (
+            <DropdownMenuItem onClick={() => handleEstado('por_comecar')}>
+              <PlayCircle className="h-4 w-4 mr-2" />Por Começar
+            </DropdownMenuItem>
+          )}
           {site.estado !== 'em_curso' && (
             <DropdownMenuItem onClick={() => handleEstado('em_curso')}>
-              <PlayCircle className="h-4 w-4 mr-2" />Marcar Em Curso
+              <PlayCircle className="h-4 w-4 mr-2" />Em Curso
             </DropdownMenuItem>
           )}
           {site.estado !== 'pausada' && (
             <DropdownMenuItem onClick={() => handleEstado('pausada')}>
-              <PauseCircle className="h-4 w-4 mr-2" />Marcar Pausada
+              <PauseCircle className="h-4 w-4 mr-2" />Em Pausa
             </DropdownMenuItem>
           )}
           {site.estado !== 'concluida' && (
             <DropdownMenuItem onClick={() => handleEstado('concluida')}>
-              <CheckCircle className="h-4 w-4 mr-2" />Marcar Concluída
+              <CheckCircle className="h-4 w-4 mr-2" />Concluída
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
