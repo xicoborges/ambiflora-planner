@@ -134,14 +134,14 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
   const hasActiveFilter = filterTeam || filterSite || filterWorker
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Cabeçalho */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-xl font-bold text-gray-900 min-w-[180px] text-center">
+          <span className="text-xl font-bold text-slate-900 min-w-[190px] text-center capitalize">
             {MESES[mes - 1]} {ano}
           </span>
           <Button variant="ghost" size="icon" onClick={() => navigate(1)}>
@@ -157,8 +157,8 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-2 bg-white rounded-lg border px-3 py-2">
-        <Filter className="h-4 w-4 text-gray-400 shrink-0" />
+      <div className="flex flex-wrap items-center gap-2 bg-white rounded-xl border shadow-sm px-3 py-2">
+        <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
         <Select value={filterTeam || ''} onValueChange={(v) => setFilterTeam(v ?? '')}>
           <SelectTrigger className="w-40 h-7 text-xs">
             <SelectValue placeholder="Equipa" />
@@ -196,12 +196,12 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
       </div>
 
       {/* Grelha */}
-      <div className="overflow-x-auto rounded-lg border bg-white">
+      <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
         <div className="min-w-[700px]">
           {/* Cabeçalho dos dias da semana */}
-          <div className="grid grid-cols-7 border-b">
+          <div className="grid grid-cols-7 border-b bg-muted/40">
             {DIAS_SEMANA.map(d => (
-              <div key={d} className="text-center text-xs font-medium text-gray-500 py-2">
+              <div key={d} className="text-center text-xs font-semibold text-slate-500 py-2.5 uppercase tracking-wide">
                 {d}
               </div>
             ))}
@@ -221,10 +221,10 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
                   {day && (
                     <>
                       <div className={cn(
-                        'text-xs font-medium px-1.5 pt-1 pb-0.5',
+                        'text-xs font-medium px-2 pt-1.5 pb-0.5',
                         isToday(day)
-                          ? 'text-white bg-green-600 rounded-full w-5 h-5 flex items-center justify-center mx-1 mt-1'
-                          : 'text-gray-500'
+                          ? 'text-white bg-primary rounded-full w-6 h-6 flex items-center justify-center mx-1.5 mt-1.5'
+                          : 'text-slate-400'
                       )}>
                         {day}
                       </div>
@@ -233,12 +233,12 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
                         return (
                           <div
                             key={periodo}
-                            className="px-1 pb-1 cursor-pointer group"
+                            className="px-1.5 pb-1.5 cursor-pointer group"
                             onClick={() => openCreate(day, periodo)}
                           >
-                            <div className="text-[10px] text-gray-400 font-medium mb-0.5 flex items-center gap-1">
-                              {periodo === 'manha' ? 'M' : 'T'}
-                              <span className="opacity-0 group-hover:opacity-100 text-green-600 transition-opacity">+</span>
+                            <div className="text-[10px] text-slate-300 font-semibold mb-0.5 flex items-center gap-1 uppercase tracking-wider">
+                              {periodo === 'manha' ? 'Manhã' : 'Tarde'}
+                              <span className="opacity-0 group-hover:opacity-100 text-primary transition-opacity text-base leading-none">+</span>
                             </div>
                             <div className="flex flex-col gap-0.5">
                               {cellAssignments.map(a => (
@@ -267,10 +267,10 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
 
       {/* Legenda */}
       {teams.length > 0 && (
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-wrap gap-3 pt-1 px-1">
           {teams.map(t => (
-            <span key={t.id} className="flex items-center gap-1.5 text-xs text-gray-600">
-              <span className="h-3 w-3 rounded-full inline-block" style={{ backgroundColor: t.cor }} />
+            <span key={t.id} className="flex items-center gap-1.5 text-xs text-slate-500">
+              <span className="h-3 w-3 rounded-full inline-block border border-black/10" style={{ backgroundColor: t.cor }} />
               {t.nome}
             </span>
           ))}

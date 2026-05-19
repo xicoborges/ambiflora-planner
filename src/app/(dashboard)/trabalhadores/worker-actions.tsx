@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { MoreHorizontal, Pencil, PowerOff, Power } from 'lucide-react'
+import { MoreHorizontal, Pencil, PowerOff, Power, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,44 +10,53 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { toggleWorkerAtivo, deleteWorker } from '@/lib/actions/workers'
-import { ConfirmDeleteMenuItem } from '@/components/confirm-delete-dialog'
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import type { Database } from '@/types/database'
 
 type Worker = Database['public']['Tables']['workers']['Row']
 
 export function WorkerActions({ worker }: { worker: Worker }) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [toggling, startToggle] = useTransition()
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
-  async function handleToggle() {
-    setLoading(true)
-    const result = await toggleWorkerAtivo(worker.id, worker.ativo)
-    if (result.error) toast.error(result.error)
-    else toast.success(worker.ativo ? 'Trabalhador desativado' : 'Trabalhador ativado')
-    setLoading(false)
+  function handleToggle() {
+    startToggle(async () => {
+      const result = await toggleWorkerAtivo(worker.id, worker.ativo)
+      if (result.error) toast.error(result.error)
+      else toast.success(worker.ativo ? 'Trabalhador desativado' : 'Trabalhador ativado')
+    })
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" disabled={loading} />}>
-        <MoreHorizontal className="h-4 w-4" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => router.push(`/trabalhadores/${worker.id}`)}>
-          <Pencil className="h-4 w-4 mr-2" />Editar
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleToggle}>
-          {worker.ativo
-            ? <><PowerOff className="h-4 w-4 mr-2" />Desativar</>
-            : <><Power className="h-4 w-4 mr-2" />Ativar</>}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <ConfirmDeleteMenuItem
-          description={`Apagar permanentemente o trabalhador "${worker.nome}" e removê-lo de todas as equipas?`}
-          onConfirm={() => deleteWorker(worker.id)}
-          successMessage="Trabalhador eliminado"
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button variant="ghost" size="icon" disabled={toggling} />}>
+          <MoreHorizontal className="h-4 w-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => router.push(`/trabalhadores/${worker.id}`)}>
+            <Pencil className="h-4 w-4 mr-2" />Editar
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleToggle}>
+            {worker.ativo
+              ? <><PowerOff className="h-4 w-4 mr-2" />Desativar</>
+              : <><Power className="h-4 w-4 mr-2" />Ativar</>}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
+            <Trash2 className="h-4 w-4 mr-2" />Eliminar
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        description={`Apagar permanentemente "${worker.nome}"? Será removido de todas as equipas.`}
+        onConfirm={() => deleteWorker(worker.id)}
+        successMessage="Trabalhador eliminado"
+      />
+    </>
   )
 }

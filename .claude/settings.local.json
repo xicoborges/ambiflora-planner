@@ -5,7 +5,15 @@
       "Bash(npm install *)",
       "Bash(cd C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner *)",
       "Bash(Test-Path *)",
-      "Bash(node test-connection.mjs)"
+      "Bash(node test-connection.mjs)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner\\\\node_modules\\\\next\\\\dist\\\\docs\" | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner\\\\node_modules\\\\next\\\\dist\\\\docs\\\\01-app\" | ForEach-Object { $_.Name } | Select-Object -First 30)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner\\\\node_modules\\\\next\\\\dist\\\\docs\\\\01-app\\\\03-api-reference\" | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner\\\\node_modules\\\\next\\\\dist\\\\docs\\\\01-app\\\\03-api-reference\\\\03-file-conventions\" | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner\\\\node_modules\\\\next\\\\dist\\\\docs\\\\01-app\\\\03-api-reference\\\\04-functions\" | ForEach-Object { $_.Name } | Where-Object { $_ -match \"middleware|cookie|redirect\" })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner\\\\node_modules\\\\next\\\\dist\\\\docs\\\\01-app\\\\03-api-reference\\\\05-config\" | ForEach-Object { $_.Name })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner\\\\node_modules\\\\next\\\\dist\\\\docs\\\\01-app\\\\02-guides\" | ForEach-Object { $_.Name } | Where-Object { $_ -match \"auth|middleware\" })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner\\\\node_modules\\\\next\\\\dist\\\\docs\\\\01-app\\\\03-api-reference\\\\05-config\\\\01-next-config-js\" | ForEach-Object { $_.Name } | Where-Object { $_ -match \"middleware\" })"
     ]
   }
 }

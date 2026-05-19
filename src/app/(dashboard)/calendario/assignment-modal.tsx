@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Trash2, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose,
 } from '@/components/ui/dialog'
-import { DialogClose } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -44,7 +43,6 @@ export function AssignmentModal({
 
   const isEdit = !!selectedAssignment
 
-  // Reset form when modal opens
   useEffect(() => {
     if (open) {
       setTeamId(selectedAssignment?.team_id ?? '')
@@ -54,17 +52,26 @@ export function AssignmentModal({
     }
   }, [open, selectedAssignment])
 
-  // Equipment occupied in this day+period (by other assignments)
-  const occupiedEquipment = new Set(
-    existingAssignments
-      .filter(a =>
-        selectedCell &&
-        a.data === selectedCell.data &&
-        a.periodo === selectedCell.periodo &&
-        a.id !== selectedAssignment?.id
-      )
-      .flatMap(a => a.assignment_equipment.map(e => e.equipment_id))
+  // Outras alocações no mesmo dia+período (exceto a que está a ser editada)
+  const conflictingAssignments = existingAssignments.filter(a =>
+    selectedCell &&
+    a.data === selectedCell.data &&
+    a.periodo === selectedCell.periodo &&
+    a.id !== selectedAssignment?.id
   )
+
+  // Equipas já ocupadas neste período
+  const occupiedTeamIds = new Set(conflictingAssignments.map(a => a.team_id))
+
+  // Equipamentos já ocupados neste período
+  const occupiedEquipmentIds = new Set(
+    conflictingAssignments.flatMap(a => a.assignment_equipment.map(e => e.equipment_id))
+  )
+
+  // Conflito de equipa: a equipa selecionada já está alocada neste período
+  const teamConflict = teamId && occupiedTeamIds.has(teamId)
+    ? conflictingAssignments.find(a => a.team_id === teamId)
+    : null
 
   function toggleEquipment(id: string) {
     setEquipmentIds(prev =>
@@ -75,6 +82,10 @@ export function AssignmentModal({
   function handleSubmit() {
     if (!selectedCell || !teamId || !siteId) {
       toast.error('Escolhe a equipa e a obra')
+      return
+    }
+    if (teamConflict) {
+      toast.error(`Esta equipa já está alocada à obra "${teamConflict.sites?.nome}" neste período`)
       return
     }
     startTransition(async () => {
@@ -115,9 +126,7 @@ export function AssignmentModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? 'Editar Alocação' : 'Nova Alocação'}
-          </DialogTitle>
+          <DialogTitle>{isEdit ? 'Editar Alocação' : 'Nova Alocação'}</DialogTitle>
           <p className="text-sm text-gray-500">
             {formatDatePT(selectedCell.data)} — {PERIODO_LABEL[selectedCell.periodo]}
           </p>
@@ -132,16 +141,26 @@ export function AssignmentModal({
                 <SelectValue placeholder="Escolher equipa..." />
               </SelectTrigger>
               <SelectContent>
-                {teams.map(t => (
-                  <SelectItem key={t.id} value={t.id}>
-                    <span className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full inline-block shrink-0" style={{ backgroundColor: t.cor }} />
-                      {t.nome}
-                    </span>
-                  </SelectItem>
-                ))}
+                {teams.map(t => {
+                  const occupied = occupiedTeamIds.has(t.id) && t.id !== selectedAssignment?.team_id
+                  return (
+                    <SelectItem key={t.id} value={t.id} disabled={occupied}>
+                      <span className="flex items-center gap-2">
+                        <span className="h-3 w-3 rounded-full inline-block shrink-0" style={{ backgroundColor: t.cor }} />
+                        {t.nome}
+                        {occupied && <span className="text-xs text-red-500 ml-1">Ocupada</span>}
+                      </span>
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
+            {teamConflict && (
+              <div className="flex items-start gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                Esta equipa já está alocada à obra <strong>{teamConflict.sites?.nome}</strong> neste período.
+              </div>
+            )}
           </div>
 
           {/* Obra */}
@@ -168,9 +187,9 @@ export function AssignmentModal({
                 <a href="/equipamentos/novo" className="underline text-green-700">Adicionar equipamento</a>
               </p>
             ) : (
-            <div className="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
                 {equipment.map(eq => {
-                  const occupied = occupiedEquipment.has(eq.id)
+                  const occupied = occupiedEquipmentIds.has(eq.id)
                   const checked = equipmentIds.includes(eq.id)
                   return (
                     <label
@@ -215,21 +234,12 @@ export function AssignmentModal({
 
         <DialogFooter>
           {isEdit && (
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={isPending}
-              onClick={handleDelete}
-              className="mr-auto"
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Eliminar
+            <Button variant="destructive" size="sm" disabled={isPending} onClick={handleDelete} className="mr-auto">
+              <Trash2 className="h-4 w-4 mr-1" />Eliminar
             </Button>
           )}
-          <DialogClose render={<Button variant="outline" size="sm" />}>
-            Cancelar
-          </DialogClose>
-          <Button size="sm" disabled={isPending || !teamId || !siteId} onClick={handleSubmit}>
+          <DialogClose render={<Button variant="outline" size="sm" />}>Cancelar</DialogClose>
+          <Button size="sm" disabled={isPending || !teamId || !siteId || !!teamConflict} onClick={handleSubmit}>
             {isPending ? 'A guardar...' : isEdit ? 'Guardar' : 'Criar Alocação'}
           </Button>
         </DialogFooter>

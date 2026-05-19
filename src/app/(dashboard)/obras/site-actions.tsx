@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { MoreHorizontal, Pencil, PauseCircle, PlayCircle, CheckCircle } from 'lucide-react'
+import { MoreHorizontal, Pencil, PauseCircle, PlayCircle, CheckCircle, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { deleteSite } from '@/lib/actions/sites'
-import { ConfirmDeleteMenuItem } from '@/components/confirm-delete-dialog'
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/types/database'
 
@@ -18,49 +18,58 @@ type Site = Database['public']['Tables']['sites']['Row']
 
 export function SiteActions({ site }: { site: Site }) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [updating, startUpdate] = useTransition()
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
-  async function handleEstado(novoEstado: 'em_curso' | 'concluida' | 'pausada') {
-    setLoading(true)
-    const supabase = createClient()
-    const { error } = await supabase.from('sites').update({ estado: novoEstado }).eq('id', site.id)
-    if (error) toast.error(error.message)
-    else { toast.success('Estado atualizado'); router.refresh() }
-    setLoading(false)
+  function handleEstado(novoEstado: 'em_curso' | 'concluida' | 'pausada') {
+    startUpdate(async () => {
+      const supabase = createClient()
+      const { error } = await supabase.from('sites').update({ estado: novoEstado }).eq('id', site.id)
+      if (error) toast.error(error.message)
+      else { toast.success('Estado atualizado'); router.refresh() }
+    })
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" disabled={loading} />}>
-        <MoreHorizontal className="h-4 w-4" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => router.push(`/obras/${site.id}`)}>
-          <Pencil className="h-4 w-4 mr-2" />Editar
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        {site.estado !== 'em_curso' && (
-          <DropdownMenuItem onClick={() => handleEstado('em_curso')}>
-            <PlayCircle className="h-4 w-4 mr-2" />Marcar Em Curso
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button variant="ghost" size="icon" disabled={updating} />}>
+          <MoreHorizontal className="h-4 w-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => router.push(`/obras/${site.id}`)}>
+            <Pencil className="h-4 w-4 mr-2" />Editar
           </DropdownMenuItem>
-        )}
-        {site.estado !== 'pausada' && (
-          <DropdownMenuItem onClick={() => handleEstado('pausada')}>
-            <PauseCircle className="h-4 w-4 mr-2" />Marcar Pausada
+          <DropdownMenuSeparator />
+          {site.estado !== 'em_curso' && (
+            <DropdownMenuItem onClick={() => handleEstado('em_curso')}>
+              <PlayCircle className="h-4 w-4 mr-2" />Marcar Em Curso
+            </DropdownMenuItem>
+          )}
+          {site.estado !== 'pausada' && (
+            <DropdownMenuItem onClick={() => handleEstado('pausada')}>
+              <PauseCircle className="h-4 w-4 mr-2" />Marcar Pausada
+            </DropdownMenuItem>
+          )}
+          {site.estado !== 'concluida' && (
+            <DropdownMenuItem onClick={() => handleEstado('concluida')}>
+              <CheckCircle className="h-4 w-4 mr-2" />Marcar Concluída
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
+            <Trash2 className="h-4 w-4 mr-2" />Eliminar
           </DropdownMenuItem>
-        )}
-        {site.estado !== 'concluida' && (
-          <DropdownMenuItem onClick={() => handleEstado('concluida')}>
-            <CheckCircle className="h-4 w-4 mr-2" />Marcar Concluída
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuSeparator />
-        <ConfirmDeleteMenuItem
-          description={`Apagar permanentemente a obra "${site.nome}"? Todas as alocações desta obra também serão apagadas.`}
-          onConfirm={() => deleteSite(site.id)}
-          successMessage="Obra eliminada"
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        description={`Apagar permanentemente "${site.nome}"? Todas as alocações desta obra também serão apagadas.`}
+        onConfirm={() => deleteSite(site.id)}
+        successMessage="Obra eliminada"
+      />
+    </>
   )
 }
