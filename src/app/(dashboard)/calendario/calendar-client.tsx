@@ -21,11 +21,15 @@ function workerColor(id: string): string {
   return WORKER_PALETTE[Math.abs(h) % WORKER_PALETTE.length]
 }
 
+function localDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
 function areConsecutive(a: Assignment, b: Assignment): boolean {
   if (a.periodo === 'manha') return b.data === a.data && b.periodo === 'tarde'
-  const next = new Date(a.data + 'T00:00:00')
-  next.setDate(next.getDate() + 1)
-  return b.data === next.toISOString().split('T')[0] && b.periodo === 'manha'
+  const [y, m, d] = a.data.split('-').map(Number)
+  const next = new Date(y, m - 1, d + 1)
+  return b.data === localDateStr(next) && b.periodo === 'manha'
 }
 
 function detectBlock(clicked: Assignment, all: Assignment[]): Assignment[] {

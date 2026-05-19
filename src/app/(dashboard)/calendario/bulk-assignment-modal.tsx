@@ -21,18 +21,27 @@ function formatDatePT(d: string) {
   return `${day}/${m}/${y}`
 }
 
+function localDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
 function generatePeriods(
   startDate: string, startPeriodo: 'manha' | 'tarde',
   endDate: string, endPeriodo: 'manha' | 'tarde'
 ): { data: string; periodo: 'manha' | 'tarde' }[] {
   if (!startDate || !endDate) return []
   const result: { data: string; periodo: 'manha' | 'tarde' }[] = []
-  const start = new Date(startDate + 'T00:00:00')
-  const end = new Date(endDate + 'T00:00:00')
+  const start = parseLocalDate(startDate)
+  const end = parseLocalDate(endDate)
   if (start > end) return result
   const cur = new Date(start)
   while (cur <= end) {
-    const dateStr = cur.toISOString().split('T')[0]
+    const dateStr = localDateStr(cur)
     const isFirst = dateStr === startDate
     const isLast = dateStr === endDate
     if (!isFirst || startPeriodo === 'manha') result.push({ data: dateStr, periodo: 'manha' })
