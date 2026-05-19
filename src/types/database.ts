@@ -6,18 +6,34 @@ export type Database = {
       workers: {
         Row: {
           id: string; nome: string; telefone: string | null; email: string | null
-          cargo: string | null; responsavel: string | null; data_admissao: string | null
+          cargo: string | null; data_admissao: string | null
           ativo: boolean; notas: string | null; created_at: string; updated_at: string
         }
         Insert: {
           id?: string; nome: string; telefone?: string | null; email?: string | null
-          cargo?: string | null; responsavel?: string | null; data_admissao?: string | null
+          cargo?: string | null; data_admissao?: string | null
           ativo?: boolean; notas?: string | null
         }
         Update: {
           id?: string; nome?: string; telefone?: string | null; email?: string | null
-          cargo?: string | null; responsavel?: string | null; data_admissao?: string | null
+          cargo?: string | null; data_admissao?: string | null
           ativo?: boolean; notas?: string | null
+        }
+        Relationships: []
+      }
+      responsaveis: {
+        Row: {
+          id: string; nome: string; cargo: string | null; telefone: string | null
+          data_admissao: string | null; notas: string | null; ativo: boolean
+          created_at: string; updated_at: string
+        }
+        Insert: {
+          id?: string; nome: string; cargo?: string | null; telefone?: string | null
+          data_admissao?: string | null; notas?: string | null; ativo?: boolean
+        }
+        Update: {
+          id?: string; nome?: string; cargo?: string | null; telefone?: string | null
+          data_admissao?: string | null; notas?: string | null; ativo?: boolean
         }
         Relationships: []
       }
@@ -70,19 +86,23 @@ export type Database = {
           id: string; nome: string; cliente: string | null; morada: string | null
           data_inicio: string | null; data_fim_prevista: string | null; valor: number | null
           estado: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada'; notas: string | null
-          created_at: string; updated_at: string
+          responsavel_id: string | null; created_at: string; updated_at: string
         }
         Insert: {
           id?: string; nome: string; cliente?: string | null; morada?: string | null
           data_inicio?: string | null; data_fim_prevista?: string | null; valor?: number | null
           estado?: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada'; notas?: string | null
+          responsavel_id?: string | null
         }
         Update: {
           id?: string; nome?: string; cliente?: string | null; morada?: string | null
           data_inicio?: string | null; data_fim_prevista?: string | null; valor?: number | null
           estado?: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada'; notas?: string | null
+          responsavel_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          { foreignKeyName: "sites_responsavel_id_fkey"; columns: ["responsavel_id"]; isOneToOne: false; referencedRelation: "responsaveis"; referencedColumns: ["id"] }
+        ]
       }
       assignments: {
         Row: {

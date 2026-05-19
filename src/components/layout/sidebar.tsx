@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, Wrench, MapPin, UsersRound, CalendarDays, BarChart3, Menu, Leaf, LogOut } from 'lucide-react'
+import { Users, Wrench, MapPin, UsersRound, CalendarDays, BarChart3, Menu, Leaf, LogOut, UserCog } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,7 @@ import { logout } from '@/lib/actions/auth'
 const navItems = [
   { href: '/calendario', label: 'Calendário', icon: CalendarDays },
   { href: '/trabalhadores', label: 'Trabalhadores', icon: Users },
+  { href: '/responsaveis', label: 'Responsáveis', icon: UserCog },
   { href: '/equipamentos', label: 'Equipamentos', icon: Wrench },
   { href: '/obras', label: 'Obras', icon: MapPin },
   { href: '/equipas', label: 'Equipas', icon: UsersRound },

@@ -18,8 +18,9 @@ import { createSite, updateSite } from '@/lib/actions/sites'
 import type { Database } from '@/types/database'
 
 type Site = Database['public']['Tables']['sites']['Row']
+type Responsavel = Database['public']['Tables']['responsaveis']['Row']
 
-export function SiteForm({ site }: { site?: Site }) {
+export function SiteForm({ site, responsaveis = [] }: { site?: Site; responsaveis?: Responsavel[] }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -85,6 +86,21 @@ export function SiteForm({ site }: { site?: Site }) {
       <div className="space-y-1.5">
         <Label htmlFor="valor">Valor (€)</Label>
         <Input id="valor" name="valor" type="number" step="0.01" min="0" defaultValue={site?.valor ?? ''} />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="responsavel_id">Pessoa Responsável</Label>
+        <Select name="responsavel_id" defaultValue={site?.responsavel_id ?? ''}>
+          <SelectTrigger id="responsavel_id">
+            <SelectValue placeholder="Nenhuma" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Nenhuma</SelectItem>
+            {responsaveis.map(r => (
+              <SelectItem key={r.id} value={r.id}>{r.nome}{r.cargo ? ` — ${r.cargo}` : ''}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-1.5">

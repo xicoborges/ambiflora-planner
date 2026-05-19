@@ -13,6 +13,7 @@ const siteSchema = z.object({
   valor: z.string().optional(),
   estado: z.enum(['por_comecar', 'em_curso', 'concluida', 'pausada']).default('por_comecar'),
   notas: z.string().optional(),
+  responsavel_id: z.string().optional(),
 })
 
 export async function createSite(formData: FormData) {
@@ -29,6 +30,7 @@ export async function createSite(formData: FormData) {
     data_fim_prevista: parsed.data.data_fim_prevista || null,
     valor: parsed.data.valor ? parseFloat(parsed.data.valor) : null,
     notas: parsed.data.notas || null,
+    responsavel_id: parsed.data.responsavel_id || null,
   }
 
   const { error } = await supabase.from('sites').insert(data)
@@ -52,6 +54,7 @@ export async function updateSite(id: string, formData: FormData) {
     data_fim_prevista: parsed.data.data_fim_prevista || null,
     valor: parsed.data.valor ? parseFloat(parsed.data.valor) : null,
     notas: parsed.data.notas || null,
+    responsavel_id: parsed.data.responsavel_id || null,
   }
 
   const { error } = await supabase.from('sites').update(data).eq('id', id)

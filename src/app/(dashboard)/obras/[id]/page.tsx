@@ -5,7 +5,11 @@ import { SiteForm } from '@/components/site-form'
 export default async function EditarObraPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: site } = await supabase.from('sites').select('*').eq('id', id).single()
+
+  const [{ data: site }, { data: responsaveis }] = await Promise.all([
+    supabase.from('sites').select('*').eq('id', id).single(),
+    supabase.from('responsaveis').select('id, nome, cargo').eq('ativo', true).order('nome'),
+  ])
 
   if (!site) notFound()
 
@@ -13,7 +17,7 @@ export default async function EditarObraPage({ params }: { params: Promise<{ id:
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900">Editar Obra</h1>
       <div className="bg-white rounded-lg border p-6">
-        <SiteForm site={site} />
+        <SiteForm site={site} responsaveis={responsaveis ?? []} />
       </div>
     </div>
   )
