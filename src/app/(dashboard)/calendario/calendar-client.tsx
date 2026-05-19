@@ -327,11 +327,12 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
                                 <button
                                   key={a.id}
                                   onClick={e => { e.stopPropagation(); openEditBlock(a) }}
-                                  className="w-full text-left text-[10px] font-medium rounded px-1 py-0.5 truncate text-white hover:opacity-80 transition-opacity"
+                                  className="w-full text-left text-[10px] font-medium rounded px-1 py-0.5 text-white hover:opacity-80 transition-opacity"
                                   style={{ backgroundColor: a.teams?.cor ?? workerColor(a.worker_id ?? a.id) }}
                                   title={`${a.teams?.nome ?? a.workers?.nome} — ${a.sites?.nome}`}
                                 >
-                                  {a.teams?.nome ?? a.workers?.nome}
+                                  <div className="truncate">{a.teams?.nome ?? a.workers?.nome}</div>
+                                  {a.sites?.nome && <div className="truncate opacity-75 font-normal">{a.sites.nome}</div>}
                                 </button>
                               ))}
                             </div>
