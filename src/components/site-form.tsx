@@ -18,9 +18,11 @@ import { createSite, updateSite } from '@/lib/actions/sites'
 import type { Database } from '@/types/database'
 
 type Site = Database['public']['Tables']['sites']['Row']
-type Responsavel = Database['public']['Tables']['responsaveis']['Row']
 
-export function SiteForm({ site, responsaveis = [] }: { site?: Site; responsaveis?: Responsavel[] }) {
+export function SiteForm({ site, responsaveis = [] }: {
+  site?: Site
+  responsaveis?: { id: string; nome: string; cargo: string | null }[]
+}) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
