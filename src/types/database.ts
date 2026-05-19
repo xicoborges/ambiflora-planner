@@ -1,104 +1,121 @@
-// Este ficheiro será substituído pelos tipos gerados automaticamente pelo Supabase.
-// Para gerar: npx supabase gen types typescript --project-id <ID> > src/types/database.ts
+// Tipos manuais — substituir por `npx supabase gen types typescript --project-id <ID>` quando disponível
 
 export type Database = {
   public: {
     Tables: {
       workers: {
         Row: {
-          id: string
-          nome: string
-          telefone: string | null
-          email: string | null
-          cargo: string | null
-          data_admissao: string | null
-          ativo: boolean
-          notas: string | null
-          created_at: string
-          updated_at: string
+          id: string; nome: string; telefone: string | null; email: string | null
+          cargo: string | null; data_admissao: string | null; ativo: boolean
+          notas: string | null; created_at: string; updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['workers']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string }
-        Update: Partial<Database['public']['Tables']['workers']['Insert']>
+        Insert: {
+          id?: string; nome: string; telefone?: string | null; email?: string | null
+          cargo?: string | null; data_admissao?: string | null; ativo?: boolean; notas?: string | null
+        }
+        Update: {
+          id?: string; nome?: string; telefone?: string | null; email?: string | null
+          cargo?: string | null; data_admissao?: string | null; ativo?: boolean; notas?: string | null
+        }
+        Relationships: []
       }
       teams: {
         Row: {
-          id: string
-          nome: string
-          cor: string
-          notas: string | null
-          ativo: boolean
-          created_at: string
-          updated_at: string
+          id: string; nome: string; cor: string; notas: string | null; ativo: boolean
+          created_at: string; updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['teams']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string }
-        Update: Partial<Database['public']['Tables']['teams']['Insert']>
+        Insert: {
+          id?: string; nome: string; cor?: string; notas?: string | null; ativo?: boolean
+        }
+        Update: {
+          id?: string; nome?: string; cor?: string; notas?: string | null; ativo?: boolean
+        }
+        Relationships: []
       }
       team_members: {
         Row: {
-          team_id: string
-          worker_id: string
-          data_inicio: string
-          data_fim: string | null
-          created_at: string
-          updated_at: string
+          team_id: string; worker_id: string; data_inicio: string; data_fim: string | null
+          created_at: string; updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['team_members']['Row'], 'created_at' | 'updated_at'>
-        Update: Partial<Database['public']['Tables']['team_members']['Insert']>
+        Insert: {
+          team_id: string; worker_id: string; data_inicio?: string; data_fim?: string | null
+        }
+        Update: {
+          team_id?: string; worker_id?: string; data_inicio?: string; data_fim?: string | null
+        }
+        Relationships: [
+          { foreignKeyName: "team_members_team_id_fkey"; columns: ["team_id"]; isOneToOne: false; referencedRelation: "teams"; referencedColumns: ["id"] },
+          { foreignKeyName: "team_members_worker_id_fkey"; columns: ["worker_id"]; isOneToOne: false; referencedRelation: "workers"; referencedColumns: ["id"] }
+        ]
       }
       equipment: {
         Row: {
-          id: string
-          nome: string
-          tipo: string | null
-          numero_serie: string | null
-          notas: string | null
-          ativo: boolean
-          created_at: string
-          updated_at: string
+          id: string; nome: string; tipo: string | null; numero_serie: string | null
+          notas: string | null; ativo: boolean; created_at: string; updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['equipment']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string }
-        Update: Partial<Database['public']['Tables']['equipment']['Insert']>
+        Insert: {
+          id?: string; nome: string; tipo?: string | null; numero_serie?: string | null
+          notas?: string | null; ativo?: boolean
+        }
+        Update: {
+          id?: string; nome?: string; tipo?: string | null; numero_serie?: string | null
+          notas?: string | null; ativo?: boolean
+        }
+        Relationships: []
       }
       sites: {
         Row: {
-          id: string
-          nome: string
-          cliente: string | null
-          morada: string | null
-          data_inicio: string | null
-          data_fim_prevista: string | null
-          valor: number | null
-          estado: 'em_curso' | 'concluida' | 'pausada'
-          notas: string | null
-          created_at: string
-          updated_at: string
+          id: string; nome: string; cliente: string | null; morada: string | null
+          data_inicio: string | null; data_fim_prevista: string | null; valor: number | null
+          estado: 'em_curso' | 'concluida' | 'pausada'; notas: string | null
+          created_at: string; updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['sites']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string }
-        Update: Partial<Database['public']['Tables']['sites']['Insert']>
+        Insert: {
+          id?: string; nome: string; cliente?: string | null; morada?: string | null
+          data_inicio?: string | null; data_fim_prevista?: string | null; valor?: number | null
+          estado?: 'em_curso' | 'concluida' | 'pausada'; notas?: string | null
+        }
+        Update: {
+          id?: string; nome?: string; cliente?: string | null; morada?: string | null
+          data_inicio?: string | null; data_fim_prevista?: string | null; valor?: number | null
+          estado?: 'em_curso' | 'concluida' | 'pausada'; notas?: string | null
+        }
+        Relationships: []
       }
       assignments: {
         Row: {
-          id: string
-          data: string
-          periodo: 'manha' | 'tarde'
-          team_id: string
-          site_id: string
-          notas: string | null
-          created_at: string
-          updated_at: string
+          id: string; data: string; periodo: 'manha' | 'tarde'; team_id: string; site_id: string
+          notas: string | null; created_at: string; updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['assignments']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string }
-        Update: Partial<Database['public']['Tables']['assignments']['Insert']>
+        Insert: {
+          id?: string; data: string; periodo: 'manha' | 'tarde'; team_id: string; site_id: string
+          notas?: string | null
+        }
+        Update: {
+          id?: string; data?: string; periodo?: 'manha' | 'tarde'; team_id?: string; site_id?: string
+          notas?: string | null
+        }
+        Relationships: [
+          { foreignKeyName: "assignments_team_id_fkey"; columns: ["team_id"]; isOneToOne: false; referencedRelation: "teams"; referencedColumns: ["id"] },
+          { foreignKeyName: "assignments_site_id_fkey"; columns: ["site_id"]; isOneToOne: false; referencedRelation: "sites"; referencedColumns: ["id"] }
+        ]
       }
       assignment_equipment: {
-        Row: {
-          assignment_id: string
-          equipment_id: string
-          created_at: string
-        }
-        Insert: Omit<Database['public']['Tables']['assignment_equipment']['Row'], 'created_at'>
-        Update: Partial<Database['public']['Tables']['assignment_equipment']['Insert']>
+        Row: { assignment_id: string; equipment_id: string; created_at: string }
+        Insert: { assignment_id: string; equipment_id: string }
+        Update: { assignment_id?: string; equipment_id?: string }
+        Relationships: [
+          { foreignKeyName: "ae_assignment_id_fkey"; columns: ["assignment_id"]; isOneToOne: false; referencedRelation: "assignments"; referencedColumns: ["id"] },
+          { foreignKeyName: "ae_equipment_id_fkey"; columns: ["equipment_id"]; isOneToOne: false; referencedRelation: "equipment"; referencedColumns: ["id"] }
+        ]
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: {
+      site_estado: 'em_curso' | 'concluida' | 'pausada'
+      assignment_periodo: 'manha' | 'tarde'
+    }
+    CompositeTypes: Record<string, never>
   }
 }

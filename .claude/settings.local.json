@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx shadcn@latest init --defaults)",
+      "Bash(npm install *)",
+      "Bash(cd C:\\\\Users\\\\FranciscoBorges\\\\Documents\\\\ambiflora-planner *)",
+      "Bash(Test-Path *)",
+      "Bash(node test-connection.mjs)"
+    ]
+  }
+}
