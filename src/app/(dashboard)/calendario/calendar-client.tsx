@@ -2,12 +2,13 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Filter } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Filter, CalendarRange } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { AssignmentModal } from './assignment-modal'
+import { BulkAssignmentModal } from './bulk-assignment-modal'
 
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 const DIAS_SEMANA = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']
@@ -48,6 +49,7 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null)
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [bulkModalOpen, setBulkModalOpen] = useState(false)
 
   // Real-time: refresh page data when DB changes
   useEffect(() => {
@@ -153,6 +155,10 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
           router.push(`/calendario?ano=${n.getFullYear()}&mes=${n.getMonth() + 1}`)
         }}>
           Hoje
+        </Button>
+        <Button size="sm" onClick={() => setBulkModalOpen(true)}>
+          <CalendarRange className="h-4 w-4 mr-1.5" />
+          Nova Alocação
         </Button>
       </div>
 
@@ -277,7 +283,17 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modal de intervalo */}
+      <BulkAssignmentModal
+        open={bulkModalOpen}
+        onOpenChange={setBulkModalOpen}
+        teams={teams}
+        sites={sites}
+        equipment={equipment}
+        existingAssignments={assignments}
+      />
+
+      {/* Modal de célula */}
       <AssignmentModal
         open={modalOpen}
         onOpenChange={(o) => { setModalOpen(o); if (!o) { setSelectedCell(null); setSelectedAssignment(null) } }}
