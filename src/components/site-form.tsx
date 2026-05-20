@@ -108,7 +108,7 @@ export function SiteForm({ site, responsaveis = [] }: {
               {responsavelId ? (responsaveis.find(r => r.id === responsavelId)?.nome ?? null) : null}
             </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="min-w-72">
             <SelectItem value="">Nenhuma</SelectItem>
             {responsaveis.map(r => (
               <SelectItem key={r.id} value={r.id}>{r.nome}{r.cargo ? ` — ${r.cargo}` : ''}</SelectItem>
