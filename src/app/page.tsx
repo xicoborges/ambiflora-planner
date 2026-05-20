@@ -2,18 +2,11 @@ import Link from 'next/link'
 import { Leaf, CalendarDays, Users, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50/60 flex flex-col">
       {/* Header */}
-      <header className="flex items-center px-6 py-5 max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <Leaf className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="font-bold text-slate-900 tracking-tight">Ambiflora</span>
-        </div>
-      </header>
 
       {/* Hero */}
       <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
