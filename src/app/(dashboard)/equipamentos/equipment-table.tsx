@@ -103,7 +103,7 @@ export function EquipmentTable({ equipment }: { equipment: Equipment[] }) {
                   <Badge variant={e.ativo ? 'default' : 'secondary'}>{e.ativo ? 'Ativo' : 'Inativo'}</Badge>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <EquipmentActions equipment={e} />
+                  <EquipmentActions equipment={e as any} />
                 </td>
               </tr>
             ))}

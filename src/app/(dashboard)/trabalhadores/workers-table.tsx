@@ -103,7 +103,7 @@ export function WorkersTable({ workers }: { workers: Worker[] }) {
                   <Badge variant={w.ativo ? 'default' : 'secondary'}>{w.ativo ? 'Ativo' : 'Inativo'}</Badge>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <WorkerActions worker={w} />
+                  <WorkerActions worker={w as any} />
                 </td>
               </tr>
             ))}

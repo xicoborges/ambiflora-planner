@@ -103,7 +103,7 @@ export function ResponsaveisTable({ responsaveis }: { responsaveis: Responsavel[
                   <Badge variant={r.ativo ? 'default' : 'secondary'}>{r.ativo ? 'Ativo' : 'Inativo'}</Badge>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <ResponsavelActions responsavel={r} />
+                  <ResponsavelActions responsavel={r as any} />
                 </td>
               </tr>
             ))}
