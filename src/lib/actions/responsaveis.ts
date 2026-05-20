@@ -69,3 +69,13 @@ export async function deleteResponsavel(id: string) {
   revalidatePath('/responsaveis')
   return { success: true }
 }
+
+export async function deleteResponsaveis(ids: string[]) {
+  if (ids.length === 0) return { success: true }
+  const supabase = await createClient()
+  await supabase.from('sites').update({ responsavel_id: null }).in('responsavel_id', ids)
+  const { error } = await supabase.from('responsaveis').delete().in('id', ids)
+  if (error) return { error: error.message }
+  revalidatePath('/responsaveis')
+  return { success: true }
+}

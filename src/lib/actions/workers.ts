@@ -69,3 +69,19 @@ export async function deleteWorker(id: string) {
   revalidatePath('/trabalhadores')
   return { success: true }
 }
+
+export async function deleteWorkers(ids: string[]) {
+  if (ids.length === 0) return { success: true }
+  const supabase = await createClient()
+  const { data: workerAssignments } = await supabase.from('assignments').select('id').in('worker_id', ids)
+  if (workerAssignments && workerAssignments.length > 0) {
+    const aIds = workerAssignments.map(a => a.id)
+    await supabase.from('assignment_equipment').delete().in('assignment_id', aIds)
+    await supabase.from('assignments').delete().in('id', aIds)
+  }
+  await supabase.from('team_members').delete().in('worker_id', ids)
+  const { error } = await supabase.from('workers').delete().in('id', ids)
+  if (error) return { error: error.message }
+  revalidatePath('/trabalhadores')
+  return { success: true }
+}

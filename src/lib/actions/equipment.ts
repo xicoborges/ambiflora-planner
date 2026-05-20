@@ -61,9 +61,18 @@ export async function toggleEquipmentAtivo(id: string, ativo: boolean) {
 
 export async function deleteEquipment(id: string) {
   const supabase = await createClient()
-  // Apagar primeiro das alocações (para não ter erro de FK)
   await supabase.from('assignment_equipment').delete().eq('equipment_id', id)
   const { error } = await supabase.from('equipment').delete().eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath('/equipamentos')
+  return { success: true }
+}
+
+export async function deleteEquipmentBulk(ids: string[]) {
+  if (ids.length === 0) return { success: true }
+  const supabase = await createClient()
+  await supabase.from('assignment_equipment').delete().in('equipment_id', ids)
+  const { error } = await supabase.from('equipment').delete().in('id', ids)
   if (error) return { error: error.message }
   revalidatePath('/equipamentos')
   return { success: true }
