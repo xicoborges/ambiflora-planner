@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { logout } from '@/lib/actions/auth'
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/calendario', label: 'Calendário', icon: CalendarDays },
   { href: '/trabalhadores', label: 'Trabalhadores', icon: Users },
   { href: '/responsaveis', label: 'Responsáveis', icon: UserCog },
@@ -25,7 +25,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="flex flex-col gap-0.5 px-3 py-2 flex-1">
       {navItems.map(({ href, label, icon: Icon }) => {
-        const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
+        const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
         return (
           <Link
             key={href}
@@ -49,7 +49,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 function Brand() {
   return (
-    <Link href="/" className="flex items-center gap-2.5 px-5 py-4 border-b border-border hover:bg-muted/30 transition-colors">
+    <Link href="/dashboard" className="flex items-center gap-2.5 px-5 py-4 border-b border-border hover:bg-muted/30 transition-colors">
       <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
         <Leaf className="h-4 w-4 text-primary-foreground" />
       </div>
