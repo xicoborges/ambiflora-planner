@@ -55,9 +55,11 @@ export default async function TrabalhadoresPage() {
             {workers?.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-14 text-center">
-                  <Users className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Nenhum trabalhador registado.</p>
-                  <p className="text-xs text-muted-foreground/70 mt-1">Começa por adicionar o primeiro trabalhador.</p>
+                  <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-3">
+                    <Users className="h-7 w-7 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700">Sem trabalhadores registados</p>
+                  <p className="text-xs text-muted-foreground mt-1">Adiciona manualmente ou importa um ficheiro CSV.</p>
                 </td>
               </tr>
             )}

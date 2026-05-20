@@ -55,9 +55,11 @@ export default async function EquipamentosPage() {
             {equipment?.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-14 text-center">
-                  <Wrench className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Nenhum equipamento registado.</p>
-                  <p className="text-xs text-muted-foreground/70 mt-1">Adiciona máquinas, veículos ou ferramentas utilizados nas obras.</p>
+                  <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-3">
+                    <Wrench className="h-7 w-7 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-700">Sem equipamentos registados</p>
+                  <p className="text-xs text-muted-foreground mt-1">Adiciona máquinas, veículos ou ferramentas utilizados nas obras.</p>
                 </td>
               </tr>
             )}
