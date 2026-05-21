@@ -133,11 +133,14 @@ export function AssignmentModal({
 
   if (!selectedCell) return null
 
-  const hasConflict = !!teamConflict || !!workerConflict
+  const equipmentConflict = equipmentIds.some(id => occupiedEquipmentIds.has(id))
+  const hasConflict = !!teamConflict || !!workerConflict || equipmentConflict
   const conflictMsg = teamConflict
     ? `Esta equipa já está alocada à obra "${teamConflict.sites?.nome}" neste período.`
     : workerConflict
     ? `Este trabalhador já está alocado à obra "${workerConflict.sites?.nome}" neste período.`
+    : equipmentConflict
+    ? 'Um ou mais equipamentos selecionados já estão alocados neste período.'
     : null
 
   return (

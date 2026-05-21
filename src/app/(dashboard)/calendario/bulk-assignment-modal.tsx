@@ -159,6 +159,17 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
     return periods.filter(p => !keys.has(`${p.data}|${p.periodo}`))
   }, [periods, conflicts])
 
+  const occupiedEquipmentInRange = useMemo(() => {
+    const excludeIds = new Set(editBlock?.ids ?? [])
+    const occupied = new Set<string>()
+    for (const p of periods) {
+      existingAssignments
+        .filter(a => !excludeIds.has(a.id) && a.data === p.data && a.periodo === p.periodo)
+        .forEach(a => a.assignment_equipment.forEach(e => occupied.add(e.equipment_id)))
+    }
+    return occupied
+  }, [periods, existingAssignments, editBlock])
+
   function toggleEquipment(id: string) {
     setEquipmentIds(prev => prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id])
   }
@@ -329,14 +340,29 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
                 <div className="grid grid-cols-2 gap-1.5 max-h-28 overflow-y-auto pr-1">
                   {equipment.map(eq => {
                     const checked = equipmentIds.includes(eq.id)
+                    const occupied = occupiedEquipmentInRange.has(eq.id)
                     return (
-                      <label key={eq.id} className={`flex items-center gap-2 text-sm rounded-md border px-2 py-1.5 cursor-pointer transition-colors ${checked ? 'border-primary bg-primary/5 text-primary' : 'hover:bg-muted/50'}`}>
+                      <label key={eq.id} className={`flex items-center gap-2 text-sm rounded-md border px-2 py-1.5 cursor-pointer transition-colors ${
+                        occupied && !checked
+                          ? 'opacity-50 bg-gray-50'
+                          : checked
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'hover:bg-muted/50'
+                      }`}>
                         <input type="checkbox" checked={checked} onChange={() => toggleEquipment(eq.id)} className="accent-primary" />
                         <span className="truncate">{eq.nome}</span>
+                        {occupied && !checked && (
+                          <span className="text-[10px] text-amber-600 ml-auto shrink-0">Parcial</span>
+                        )}
                       </label>
                     )
                   })}
                 </div>
+                {occupiedEquipmentInRange.size > 0 && (
+                  <p className="text-[11px] text-amber-600">
+                    Equipamentos marcados como "Parcial" já estão alocados nalguns períodos do intervalo.
+                  </p>
+                )}
               </div>
             )}
 
