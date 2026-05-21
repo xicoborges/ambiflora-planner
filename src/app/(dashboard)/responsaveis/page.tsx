@@ -21,7 +21,7 @@ export default async function ResponsaveisPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Responsáveis</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {ativos} activo{ativos !== 1 ? 's' : ''} · {responsaveis?.length ?? 0} no total
+            {ativos} ativo{ativos !== 1 ? 's' : ''} · {responsaveis?.length ?? 0} no total
           </p>
         </div>
         <div className="flex items-center gap-2">

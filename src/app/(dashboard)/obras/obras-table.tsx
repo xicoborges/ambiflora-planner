@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { Trash2, MapPin, Search } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { SiteActions } from './site-actions'
@@ -50,7 +49,6 @@ function fmtEuros(v: number | null) {
 export function ObrasTable({ sites }: { sites: Site[] }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
   const [search, setSearch] = useState('')
   const [estadoFilter, setEstadoFilter] = useState('todos')
 
@@ -92,7 +90,7 @@ export function ObrasTable({ sites }: { sites: Site[] }) {
             className="text-slate-300 hover:text-white hover:bg-white/10 h-7 text-xs">
             Cancelar
           </Button>
-          <Button variant="destructive" size="sm" disabled={isPending} onClick={() => setBulkDeleteOpen(true)} className="h-7 text-xs">
+          <Button variant="destructive" size="sm" onClick={() => setBulkDeleteOpen(true)} className="h-7 text-xs">
             <Trash2 className="h-3.5 w-3.5 mr-1" />
             Eliminar
           </Button>

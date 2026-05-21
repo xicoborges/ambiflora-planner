@@ -21,7 +21,7 @@ export default async function TrabalhadoresPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Trabalhadores</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {ativos} activo{ativos !== 1 ? 's' : ''} · {workers?.length ?? 0} no total
+            {ativos} ativo{ativos !== 1 ? 's' : ''} · {workers?.length ?? 0} no total
           </p>
         </div>
         <div className="flex items-center gap-2">

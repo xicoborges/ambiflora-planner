@@ -10,6 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { addTeamMember, removeTeamMember } from '@/lib/actions/teams'
 
 interface Member {
@@ -34,6 +35,7 @@ interface Props {
 export function TeamMembersPanel({ teamId, members, availableWorkers }: Props) {
   const [selectedWorkerId, setSelectedWorkerId] = useState('')
   const [isPending, startTransition] = useTransition()
+  const [removeTarget, setRemoveTarget] = useState<{ workerId: string; dataInicio: string; nome: string } | null>(null)
 
   function handleAdd() {
     if (!selectedWorkerId) return
@@ -44,17 +46,6 @@ export function TeamMembersPanel({ teamId, members, availableWorkers }: Props) {
       } else {
         toast.success('Trabalhador adicionado à equipa')
         setSelectedWorkerId('')
-      }
-    })
-  }
-
-  function handleRemove(workerId: string, dataInicio: string) {
-    startTransition(async () => {
-      const result = await removeTeamMember(teamId, workerId, dataInicio)
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.success('Trabalhador removido da equipa')
       }
     })
   }
@@ -77,7 +68,7 @@ export function TeamMembersPanel({ teamId, members, availableWorkers }: Props) {
                 variant="ghost"
                 size="icon"
                 disabled={isPending}
-                onClick={() => handleRemove(m.worker_id, m.data_inicio)}
+                onClick={() => setRemoveTarget({ workerId: m.worker_id, dataInicio: m.data_inicio, nome: m.workers?.nome ?? '' })}
               >
                 <Trash2 className="h-4 w-4 text-red-500" />
               </Button>
@@ -109,6 +100,14 @@ export function TeamMembersPanel({ teamId, members, availableWorkers }: Props) {
           </Button>
         </div>
       )}
+
+      <ConfirmDeleteDialog
+        open={!!removeTarget}
+        onOpenChange={(open) => { if (!open) setRemoveTarget(null) }}
+        description={`Remover "${removeTarget?.nome}" desta equipa?`}
+        onConfirm={() => removeTeamMember(teamId, removeTarget!.workerId, removeTarget!.dataInicio)}
+        successMessage="Trabalhador removido da equipa"
+      />
     </div>
   )
 }

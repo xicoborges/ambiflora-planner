@@ -70,6 +70,14 @@ export async function updateSite(id: string, formData: FormData) {
   return { success: true }
 }
 
+export async function updateSiteEstado(id: string, estado: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada') {
+  const supabase = await createClient()
+  const { error } = await supabase.from('sites').update({ estado }).eq('id', id)
+  if (error) return { error: error.message }
+  revalidatePath('/obras')
+  return { success: true }
+}
+
 export async function toggleSiteEstado(id: string, estado: string) {
   const supabase = await createClient()
   const novoEstado = estado === 'em_curso' ? 'pausada' : 'em_curso'

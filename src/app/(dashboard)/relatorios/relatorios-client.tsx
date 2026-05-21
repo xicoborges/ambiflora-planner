@@ -68,6 +68,8 @@ export function RelatoriosClient({ workers, teams, sites, equipment }: Props) {
         toast.error(result.error)
       } else {
         setDados(result)
+        setFilterSiteId('')
+        setFilterWorkerNome('')
       }
     })
   }

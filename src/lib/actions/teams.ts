@@ -50,6 +50,21 @@ export async function toggleTeamAtivo(id: string, ativo: boolean) {
   return { success: true }
 }
 
+export async function deleteTeams(ids: string[]) {
+  if (ids.length === 0) return { success: true }
+  const supabase = await createClient()
+  const { data: teamAssignments } = await supabase.from('assignments').select('id').in('team_id', ids)
+  if (teamAssignments && teamAssignments.length > 0) {
+    const aIds = teamAssignments.map((a: any) => a.id)
+    await supabase.from('assignment_equipment').delete().in('assignment_id', aIds)
+    await supabase.from('assignments').delete().in('id', aIds)
+  }
+  const { error } = await supabase.from('teams').delete().in('id', ids)
+  if (error) return { error: error.message }
+  revalidatePath('/equipas')
+  return { success: true }
+}
+
 export async function deleteTeam(id: string) {
   const supabase = await createClient()
   // Apagar alocações desta equipa e respetivos equipamentos

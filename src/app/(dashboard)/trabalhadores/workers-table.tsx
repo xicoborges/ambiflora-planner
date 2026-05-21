@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { Trash2, Users, Search } from 'lucide-react'
-import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
@@ -24,7 +23,6 @@ function fmtDate(d: string | null) {
 export function WorkersTable({ workers }: { workers: Worker[] }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
   const [search, setSearch] = useState('')
   const [ativoFilter, setAtivoFilter] = useState<AtivoFilter>('todos')
 
@@ -66,7 +64,7 @@ export function WorkersTable({ workers }: { workers: Worker[] }) {
             className="text-slate-300 hover:text-white hover:bg-white/10 h-7 text-xs">
             Cancelar
           </Button>
-          <Button variant="destructive" size="sm" disabled={isPending} onClick={() => setBulkDeleteOpen(true)} className="h-7 text-xs">
+          <Button variant="destructive" size="sm" onClick={() => setBulkDeleteOpen(true)} className="h-7 text-xs">
             <Trash2 className="h-3.5 w-3.5 mr-1" />
             Eliminar
           </Button>

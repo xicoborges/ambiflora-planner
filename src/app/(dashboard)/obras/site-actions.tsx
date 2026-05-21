@@ -9,9 +9,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { deleteSite } from '@/lib/actions/sites'
+import { deleteSite, updateSiteEstado } from '@/lib/actions/sites'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
-import { createClient } from '@/lib/supabase/client'
 import type { Database } from '@/types/database'
 
 type Site = Database['public']['Tables']['sites']['Row']
@@ -23,10 +22,9 @@ export function SiteActions({ site }: { site: Site }) {
 
   function handleEstado(novoEstado: 'por_comecar' | 'em_curso' | 'concluida' | 'pausada') {
     startUpdate(async () => {
-      const supabase = createClient()
-      const { error } = await supabase.from('sites').update({ estado: novoEstado }).eq('id', site.id)
-      if (error) toast.error(error.message)
-      else { toast.success('Estado atualizado'); router.refresh() }
+      const result = await updateSiteEstado(site.id, novoEstado)
+      if (result.error) toast.error(result.error)
+      else toast.success('Estado atualizado')
     })
   }
 

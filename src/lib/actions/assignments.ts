@@ -145,6 +145,15 @@ export async function bulkCreateAssignments(input: {
     for (const m of mbs ?? []) (teamMembers[m.team_id] ??= []).push(m.worker_id)
   }
 
+  // Pre-fetch team memberships for workers in input (cross-conflict: worker belongs to an assigned team)
+  const workerIds = [...new Set(input.filter(i => i.worker_id).map(i => i.worker_id!))]
+  const workerTeams: Record<string, string[]> = {}
+  if (workerIds.length > 0) {
+    const { data: wmbs } = await supabase
+      .from('team_members').select('team_id, worker_id').in('worker_id', workerIds).is('data_fim', null) as any
+    for (const m of wmbs ?? []) (workerTeams[m.worker_id] ??= []).push(m.team_id)
+  }
+
   let created = 0
 
   for (const { equipment_ids, ...fields } of input) {
@@ -162,6 +171,10 @@ export async function bulkCreateAssignments(input: {
 
     if (!skip && fields.worker_id) {
       if (slots.some((a: any) => a.worker_id === fields.worker_id)) skip = true
+      else {
+        const myTeams = new Set(workerTeams[fields.worker_id] ?? [])
+        if (myTeams.size > 0 && slots.some((a: any) => a.team_id && myTeams.has(a.team_id))) skip = true
+      }
     }
 
     if (!skip && equipment_ids.length > 0) {
