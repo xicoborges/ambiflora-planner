@@ -16,14 +16,14 @@ export async function createTeam(formData: FormData) {
   const parsed = teamSchema.safeParse(raw)
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
-  const { error } = await supabase.from('teams').insert({
+  const { data, error } = await supabase.from('teams').insert({
     ...parsed.data,
     notas: parsed.data.notas || null,
-  })
+  }).select('id').single()
   if (error) return { error: error.message }
 
   revalidatePath('/equipas')
-  return { success: true }
+  return { success: true, id: data.id }
 }
 
 export async function updateTeam(id: string, formData: FormData) {

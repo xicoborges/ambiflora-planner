@@ -29,9 +29,11 @@ export function TeamForm({ team }: { team?: Team }) {
 
       if (result.error) {
         toast.error(result.error)
+      } else if (team) {
+        toast.success('Equipa atualizada')
       } else {
-        toast.success(team ? 'Equipa atualizada' : 'Equipa criada')
-        router.push(team ? `/equipas/${team.id}` : '/equipas')
+        toast.success('Equipa criada')
+        router.push(`/equipas/${'id' in result ? result.id : ''}`)
       }
     })
   }
@@ -74,9 +76,11 @@ export function TeamForm({ team }: { team?: Team }) {
         <Button type="submit" disabled={isPending}>
           {isPending ? 'A guardar...' : team ? 'Guardar Alterações' : 'Criar Equipa'}
         </Button>
-        <Button type="button" variant="outline" onClick={() => router.push('/equipas')}>
-          Cancelar
-        </Button>
+        {!team && (
+          <Button type="button" variant="outline" onClick={() => router.push('/equipas')}>
+            Cancelar
+          </Button>
+        )}
       </div>
     </form>
   )
