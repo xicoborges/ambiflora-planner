@@ -9,7 +9,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import { addTeamMember, removeTeamMember } from '@/lib/actions/teams'
 
@@ -91,7 +90,11 @@ export function TeamMembersPanel({ teamId, members, availableWorkers }: Props) {
         <div className="flex gap-2 pt-2 border-t">
           <Select value={selectedWorkerId} onValueChange={(v) => setSelectedWorkerId(v ?? '')}>
             <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Adicionar trabalhador..." />
+              <span className={`flex flex-1 text-left text-sm ${!selectedWorkerId ? 'text-muted-foreground' : ''}`}>
+                {selectedWorkerId
+                  ? (availableWorkers.find(w => w.id === selectedWorkerId)?.nome ?? '—')
+                  : 'Adicionar trabalhador...'}
+              </span>
             </SelectTrigger>
             <SelectContent>
               {availableWorkers.map((w) => (
