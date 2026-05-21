@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 async function checkConflict(
   supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never,
   data: string,
-  periodo: string,
+  periodo: 'manha' | 'tarde',
   team_id: string | null | undefined,
   worker_id: string | null | undefined,
   equipment_ids: string[],
