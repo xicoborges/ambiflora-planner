@@ -53,7 +53,7 @@ export function ResponsavelActions({ responsavel }: { responsavel: Responsavel }
       <ConfirmDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        description={`Apagar permanentemente "${responsavel.nome}"?`}
+        description={`Apagar permanentemente "${responsavel.nome}"? Será desassociado de todas as obras a que pertence.`}
         onConfirm={() => deleteResponsavel(responsavel.id)}
         successMessage="Responsável eliminado"
       />

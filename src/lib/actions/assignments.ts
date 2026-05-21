@@ -208,6 +208,7 @@ export async function deleteAssignments(ids: string[]) {
 
 export async function deleteAssignment(id: string) {
   const supabase = await createClient()
+  await supabase.from('assignment_equipment').delete().eq('assignment_id', id)
   const { error } = await supabase.from('assignments').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/calendario')

@@ -64,6 +64,13 @@ export async function toggleWorkerAtivo(id: string, ativo: boolean) {
 
 export async function deleteWorker(id: string) {
   const supabase = await createClient()
+  const { data: workerAssignments } = await supabase.from('assignments').select('id').eq('worker_id', id)
+  if (workerAssignments && workerAssignments.length > 0) {
+    const aIds = workerAssignments.map(a => a.id)
+    await supabase.from('assignment_equipment').delete().in('assignment_id', aIds)
+    await supabase.from('assignments').delete().in('id', aIds)
+  }
+  await supabase.from('team_members').delete().eq('worker_id', id)
   const { error } = await supabase.from('workers').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/trabalhadores')

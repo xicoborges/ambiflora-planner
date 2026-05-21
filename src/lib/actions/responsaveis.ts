@@ -64,6 +64,7 @@ export async function toggleResponsavelAtivo(id: string, ativo: boolean) {
 
 export async function deleteResponsavel(id: string) {
   const supabase = await createClient()
+  await supabase.from('sites').update({ responsavel_id: null }).eq('responsavel_id', id)
   const { error } = await supabase.from('responsaveis').delete().eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/responsaveis')

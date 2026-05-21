@@ -53,7 +53,7 @@ export function WorkerActions({ worker }: { worker: Worker }) {
       <ConfirmDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        description={`Apagar permanentemente "${worker.nome}"? Será removido de todas as equipas.`}
+        description={`Apagar permanentemente "${worker.nome}"? Todas as suas alocações no calendário e membros de equipas também serão eliminados.`}
         onConfirm={() => deleteWorker(worker.id)}
         successMessage="Trabalhador eliminado"
       />
