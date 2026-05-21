@@ -158,7 +158,14 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
 
   function getCellAssignments(day: number, periodo: 'manha' | 'tarde') {
     const dateStr = getDateString(day)
-    return filteredAssignments.filter(a => a.data === dateStr && a.periodo === periodo)
+    return filteredAssignments
+      .filter(a => a.data === dateStr && a.periodo === periodo)
+      .sort((a, b) => {
+        const aName = a.teams?.nome ?? a.workers?.nome ?? ''
+        const bName = b.teams?.nome ?? b.workers?.nome ?? ''
+        const cmp = aName.localeCompare(bName, 'pt')
+        return cmp !== 0 ? cmp : (a.sites?.nome ?? '').localeCompare(b.sites?.nome ?? '', 'pt')
+      })
   }
 
   function openCreate(day: number, periodo: 'manha' | 'tarde') {
