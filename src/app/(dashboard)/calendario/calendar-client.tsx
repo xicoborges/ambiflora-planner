@@ -290,8 +290,11 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
       <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
         <div className="min-w-[700px]">
           <div className="grid grid-cols-7 border-b bg-muted/40">
-            {DIAS_SEMANA.map(d => (
-              <div key={d} className="text-center text-xs font-semibold text-slate-500 py-2.5 uppercase tracking-wide">
+            {DIAS_SEMANA.map((d, i) => (
+              <div key={d} className={cn(
+                'text-center text-xs font-semibold py-2.5 uppercase tracking-wide',
+                i >= 5 ? 'text-slate-400 bg-slate-50' : 'text-slate-500'
+              )}>
                 {d}
               </div>
             ))}
@@ -304,7 +307,7 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
                   key={di}
                   className={cn(
                     'border-r last:border-r-0 min-h-[90px]',
-                    !day && 'bg-gray-50/50'
+                    !day ? 'bg-gray-50/50' : di >= 5 ? 'bg-slate-50/60' : ''
                   )}
                 >
                   {day && (
@@ -313,10 +316,11 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
                         'text-xs font-medium px-2 pt-1.5 pb-0.5',
                         isToday(day)
                           ? 'text-white bg-primary rounded-full w-6 h-6 flex items-center justify-center mx-1.5 mt-1.5'
-                          : 'text-slate-400'
+                          : di >= 5 ? 'text-slate-300' : 'text-slate-400'
                       )}>
                         {day}
                       </div>
+                      <div className="overflow-y-auto max-h-40">
                       {(['manha', 'tarde'] as const).map(periodo => {
                         const cellAssignments = getCellAssignments(day, periodo)
                         return (
@@ -346,6 +350,7 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
                           </div>
                         )
                       })}
+                      </div>
                     </>
                   )}
                 </div>
@@ -395,7 +400,6 @@ export function CalendarClient({ ano, mes, assignments, teams, sites, workers, e
         open={modalOpen}
         onOpenChange={(o) => { setModalOpen(o); if (!o) setSelectedCell(null) }}
         selectedCell={selectedCell}
-        selectedAssignment={null}
         teams={teams}
         sites={sites}
         equipment={equipment}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { Trash2, AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose,
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { upsertAssignment, deleteAssignment } from '@/lib/actions/assignments'
+import { upsertAssignment } from '@/lib/actions/assignments'
 import type { Assignment, SelectedCell } from './calendar-client'
 
 const PERIODO_LABEL = { manha: 'Manhã', tarde: 'Tarde' }
@@ -19,7 +19,6 @@ interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   selectedCell: SelectedCell | null
-  selectedAssignment: Assignment | null
   teams: { id: string; nome: string; cor: string }[]
   sites: { id: string; nome: string }[]
   equipment: { id: string; nome: string }[]
@@ -33,7 +32,7 @@ function formatDatePT(dateStr: string) {
 }
 
 export function AssignmentModal({
-  open, onOpenChange, selectedCell, selectedAssignment,
+  open, onOpenChange, selectedCell,
   teams, sites, equipment, workers, existingAssignments,
 }: Props) {
   const [isPending, startTransition] = useTransition()
@@ -44,25 +43,21 @@ export function AssignmentModal({
   const [notas, setNotas] = useState('')
   const [equipmentIds, setEquipmentIds] = useState<string[]>([])
 
-  const isEdit = !!selectedAssignment
-
   useEffect(() => {
     if (open) {
-      const hasWorker = !!selectedAssignment?.worker_id
-      setMode(hasWorker ? 'trabalhador' : 'equipa')
-      setTeamId(selectedAssignment?.team_id ?? '')
-      setWorkerId(selectedAssignment?.worker_id ?? '')
-      setSiteId(selectedAssignment?.site_id ?? '')
-      setNotas(selectedAssignment?.notas ?? '')
-      setEquipmentIds(selectedAssignment?.assignment_equipment.map(e => e.equipment_id) ?? [])
+      setMode('equipa')
+      setTeamId('')
+      setWorkerId('')
+      setSiteId('')
+      setNotas('')
+      setEquipmentIds([])
     }
-  }, [open, selectedAssignment])
+  }, [open])
 
   const conflictingAssignments = existingAssignments.filter(a =>
     selectedCell &&
     a.data === selectedCell.data &&
-    a.periodo === selectedCell.periodo &&
-    a.id !== selectedAssignment?.id
+    a.periodo === selectedCell.periodo
   )
 
   const occupiedTeamIds = new Set(conflictingAssignments.map(a => a.team_id).filter(Boolean))
@@ -101,7 +96,6 @@ export function AssignmentModal({
     }
     startTransition(async () => {
       const result = await upsertAssignment({
-        id: selectedAssignment?.id,
         data: selectedCell.data,
         periodo: selectedCell.periodo,
         team_id: mode === 'equipa' ? teamId : null,
@@ -113,20 +107,7 @@ export function AssignmentModal({
       if (result.error) {
         toast.error(result.error)
       } else {
-        toast.success(isEdit ? 'Alocação atualizada' : 'Alocação criada')
-        onOpenChange(false)
-      }
-    })
-  }
-
-  function handleDelete() {
-    if (isPending || !selectedAssignment) return
-    startTransition(async () => {
-      const result = await deleteAssignment(selectedAssignment.id)
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.success('Alocação eliminada')
+        toast.success('Alocação criada')
         onOpenChange(false)
       }
     })
@@ -148,7 +129,7 @@ export function AssignmentModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar Alocação' : 'Nova Alocação'}</DialogTitle>
+          <DialogTitle>Nova Alocação</DialogTitle>
           <p className="text-sm text-gray-500">
             {formatDatePT(selectedCell.data)} — {PERIODO_LABEL[selectedCell.periodo]}
           </p>
@@ -185,7 +166,7 @@ export function AssignmentModal({
                 </SelectTrigger>
                 <SelectContent>
                   {teams.map(t => {
-                    const occupied = occupiedTeamIds.has(t.id) && t.id !== selectedAssignment?.team_id
+                    const occupied = occupiedTeamIds.has(t.id)
                     return (
                       <SelectItem key={t.id} value={t.id} disabled={occupied}>
                         <span className="flex items-center gap-2">
@@ -210,7 +191,7 @@ export function AssignmentModal({
                 </SelectTrigger>
                 <SelectContent>
                   {workers.map(w => {
-                    const occupied = occupiedWorkerIds.has(w.id) && w.id !== selectedAssignment?.worker_id
+                    const occupied = occupiedWorkerIds.has(w.id)
                     return (
                       <SelectItem key={w.id} value={w.id} disabled={occupied}>
                         {w.nome}
@@ -297,18 +278,13 @@ export function AssignmentModal({
         </div>
 
         <DialogFooter>
-          {isEdit && (
-            <Button variant="destructive" size="sm" disabled={isPending} onClick={handleDelete} className="mr-auto">
-              <Trash2 className="h-4 w-4 mr-1" />Eliminar
-            </Button>
-          )}
           <DialogClose render={<Button variant="outline" size="sm" />}>Cancelar</DialogClose>
           <Button
             size="sm"
             disabled={isPending || !siteId || (mode === 'equipa' ? !teamId : !workerId) || hasConflict}
             onClick={handleSubmit}
           >
-            {isPending ? 'A guardar...' : isEdit ? 'Guardar' : 'Criar Alocação'}
+            {isPending ? 'A guardar...' : 'Criar Alocação'}
           </Button>
         </DialogFooter>
       </DialogContent>

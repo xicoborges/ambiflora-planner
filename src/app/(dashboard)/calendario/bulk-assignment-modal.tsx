@@ -386,7 +386,7 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
               <div className="flex items-center gap-2 text-amber-700 font-medium text-sm">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
-                {conflicts.length} conflito{conflicts.length !== 1 ? 's' : ''} detectado{conflicts.length !== 1 ? 's' : ''}
+                {conflicts.length} conflito{conflicts.length !== 1 ? 's' : ''} detetado{conflicts.length !== 1 ? 's' : ''}
               </div>
               <ul className="space-y-1 max-h-44 overflow-y-auto">
                 {conflicts.map(c => (

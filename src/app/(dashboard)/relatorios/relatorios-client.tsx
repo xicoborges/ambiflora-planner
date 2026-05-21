@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useMemo } from 'react'
 import { FileDown, FileText, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { gerarRelatorio, exportarExcel } from './actions'
 
 export type RelatorioData = {
@@ -41,8 +42,20 @@ export function RelatoriosClient({ workers, teams, sites, equipment }: Props) {
   const [dataInicio, setDataInicio] = useState(toInputDate(primeiroDiaMes))
   const [dataFim, setDataFim] = useState(toInputDate(hoje))
   const [dados, setDados] = useState<RelatorioData | null>(null)
+  const [filterSiteId, setFilterSiteId] = useState('')
+  const [filterWorkerNome, setFilterWorkerNome] = useState('')
   const [isPending, startTransition] = useTransition()
   const [isExporting, startExport] = useTransition()
+
+  const linhasFiltradas = useMemo(() => {
+    if (!dados) return []
+    const siteNome = filterSiteId ? sites.find(s => s.id === filterSiteId)?.nome : null
+    return dados.linhas.filter(r => {
+      if (siteNome && r.siteName !== siteNome) return false
+      if (filterWorkerNome && !r.trabalhadores.includes(filterWorkerNome)) return false
+      return true
+    })
+  }, [dados, filterSiteId, filterWorkerNome, sites])
 
   function handleGerar() {
     if (dataFim < dataInicio) {
@@ -77,20 +90,20 @@ export function RelatoriosClient({ workers, teams, sites, equipment }: Props) {
   function handleExportPDF() {
     if (!dados) return
 
-    const totalAlocacoes = dados.linhas.length
-    const obrasUnicas = new Set(dados.linhas.map(r => r.siteName))
-    const trabalhadoresUnicos = new Set(dados.linhas.flatMap(r => r.trabalhadores))
-    const equipamentosUnicos = new Set(dados.linhas.flatMap(r => r.equipamentos))
+    const totalAlocacoes = linhasFiltradas.length
+    const obrasUnicas = new Set(linhasFiltradas.map(r => r.siteName))
+    const trabalhadoresUnicos = new Set(linhasFiltradas.flatMap(r => r.trabalhadores))
+    const equipamentosUnicos = new Set(linhasFiltradas.flatMap(r => r.equipamentos))
 
     const porObra: Record<string, number> = {}
-    dados.linhas.forEach(r => { porObra[r.siteName] = (porObra[r.siteName] ?? 0) + 1 })
+    linhasFiltradas.forEach(r => { porObra[r.siteName] = (porObra[r.siteName] ?? 0) + 1 })
     const obrasSorted = Object.entries(porObra).sort((a, b) => b[1] - a[1])
     const maxObra = Math.max(...Object.values(porObra), 1)
 
     const fmtD = (d: string) => { const [y, m, day] = d.split('-'); return `${day}/${m}/${y}` }
     const geradoEm = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
 
-    const tableRows = dados.linhas.map(r => `
+    const tableRows = linhasFiltradas.map(r => `
       <tr>
         <td>${fmtD(r.data)}</td>
         <td><strong>${r.siteName}</strong></td>
@@ -220,7 +233,7 @@ export function RelatoriosClient({ workers, teams, sites, equipment }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Relatórios</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Resumo de actividade por período</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Resumo de atividade por período</p>
         </div>
         {dados && (
           <div className="flex items-center gap-2">
@@ -255,48 +268,89 @@ export function RelatoriosClient({ workers, teams, sites, equipment }: Props) {
       </div>
 
       {dados && (
-        <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide">Dia</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide">Obra</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide">Período</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide">Trabalhador(es)</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide hidden md:table-cell">Equipamento(s)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {dados.linhas.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground text-sm">
-                    Sem alocações no período seleccionado.
-                  </td>
-                </tr>
-              )}
-              {dados.linhas.map((r, i) => (
-                <tr key={i} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-2.5 tabular-nums text-slate-600 whitespace-nowrap">{fmtDate(r.data)}</td>
-                  <td className="px-4 py-2.5 font-medium text-slate-900">{r.siteName}</td>
-                  <td className="px-4 py-2.5 text-slate-500 whitespace-nowrap">
-                    {r.periodo === 'manha' ? 'Manhã' : 'Tarde'}
-                  </td>
-                  <td className="px-4 py-2.5 text-slate-600">
-                    {r.trabalhadores.length > 0 ? r.trabalhadores.join(', ') : <span className="text-slate-400">—</span>}
-                  </td>
-                  <td className="px-4 py-2.5 text-slate-500 hidden md:table-cell">
-                    {r.equipamentos.length > 0 ? r.equipamentos.join(', ') : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {dados.linhas.length > 0 && (
-            <div className="px-4 py-2.5 border-t text-xs text-muted-foreground">
-              {dados.linhas.length} alocaç{dados.linhas.length === 1 ? 'ão' : 'ões'} no período
+        <>
+          {/* Filtros de obra e trabalhador */}
+          <div className="bg-white rounded-xl border shadow-sm px-4 py-3 flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Filtrar por Obra</Label>
+              <Select value={filterSiteId} onValueChange={v => setFilterSiteId(v ?? '')}>
+                <SelectTrigger className="w-48 h-8 text-sm">
+                  <SelectValue placeholder="Todas as obras">
+                    {filterSiteId ? sites.find(s => s.id === filterSiteId)?.nome : null}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas as obras</SelectItem>
+                  {sites.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
-          )}
-        </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Filtrar por Trabalhador</Label>
+              <Select value={filterWorkerNome} onValueChange={v => setFilterWorkerNome(v ?? '')}>
+                <SelectTrigger className="w-48 h-8 text-sm">
+                  <SelectValue placeholder="Todos os trabalhadores">
+                    {filterWorkerNome || null}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos os trabalhadores</SelectItem>
+                  {workers.map(w => <SelectItem key={w.id} value={w.nome}>{w.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {(filterSiteId || filterWorkerNome) && (
+              <Button variant="ghost" size="sm" className="h-8 text-xs self-end"
+                onClick={() => { setFilterSiteId(''); setFilterWorkerNome('') }}>
+                Limpar filtros
+              </Button>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide">Dia</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide">Obra</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide">Período</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide">Trabalhador(es)</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 text-xs uppercase tracking-wide hidden md:table-cell">Equipamento(s)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {linhasFiltradas.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground text-sm">
+                      Sem alocações no período selecionado.
+                    </td>
+                  </tr>
+                )}
+                {linhasFiltradas.map((r, i) => (
+                  <tr key={i} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-2.5 tabular-nums text-slate-600 whitespace-nowrap">{fmtDate(r.data)}</td>
+                    <td className="px-4 py-2.5 font-medium text-slate-900">{r.siteName}</td>
+                    <td className="px-4 py-2.5 text-slate-500 whitespace-nowrap">
+                      {r.periodo === 'manha' ? 'Manhã' : 'Tarde'}
+                    </td>
+                    <td className="px-4 py-2.5 text-slate-600">
+                      {r.trabalhadores.length > 0 ? r.trabalhadores.join(', ') : <span className="text-slate-400">—</span>}
+                    </td>
+                    <td className="px-4 py-2.5 text-slate-500 hidden md:table-cell">
+                      {r.equipamentos.length > 0 ? r.equipamentos.join(', ') : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {linhasFiltradas.length > 0 && (
+              <div className="px-4 py-2.5 border-t text-xs text-muted-foreground">
+                {linhasFiltradas.length} alocaç{linhasFiltradas.length === 1 ? 'ão' : 'ões'}
+                {(filterSiteId || filterWorkerNome) ? ' com os filtros aplicados' : ' no período'}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   )
