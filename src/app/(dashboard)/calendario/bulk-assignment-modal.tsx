@@ -21,6 +21,21 @@ function formatDatePT(d: string) {
   return `${day}-${m}-${y}`
 }
 
+function toDMY(iso: string): string {
+  if (!iso) return ''
+  const [y, m, d] = iso.split('-')
+  return `${d}-${m}-${y}`
+}
+
+function parseDMY(s: string): string | null {
+  const match = s.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+  if (!match) return null
+  const [, d, m, y] = match
+  const date = new Date(Number(y), Number(m) - 1, Number(d))
+  if (isNaN(date.getTime())) return null
+  return `${y}-${m}-${d}`
+}
+
 function localDateStr(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
@@ -89,8 +104,10 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
 
   const [mode, setMode] = useState<'equipa' | 'trabalhador'>('equipa')
   const [startDate, setStartDate] = useState(today)
+  const [startDateDisplay, setStartDateDisplay] = useState(() => toDMY(today))
   const [startPeriodo, setStartPeriodo] = useState<'manha' | 'tarde'>('manha')
   const [endDate, setEndDate] = useState(today)
+  const [endDateDisplay, setEndDateDisplay] = useState(() => toDMY(today))
   const [endPeriodo, setEndPeriodo] = useState<'manha' | 'tarde'>('tarde')
   const [teamId, setTeamId] = useState('')
   const [workerId, setWorkerId] = useState('')
@@ -105,8 +122,10 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
     if (open && editBlock) {
       setMode(editBlock.mode)
       setStartDate(editBlock.startDate)
+      setStartDateDisplay(toDMY(editBlock.startDate))
       setStartPeriodo(editBlock.startPeriodo)
       setEndDate(editBlock.endDate)
+      setEndDateDisplay(toDMY(editBlock.endDate))
       setEndPeriodo(editBlock.endPeriodo)
       setTeamId(editBlock.teamId)
       setWorkerId(editBlock.workerId)
@@ -122,8 +141,10 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
     if (editBlock) return
     setMode('equipa')
     setStartDate(today)
+    setStartDateDisplay(toDMY(today))
     setStartPeriodo('manha')
     setEndDate(today)
+    setEndDateDisplay(toDMY(today))
     setEndPeriodo('tarde')
     setTeamId('')
     setWorkerId('')
@@ -270,7 +291,16 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Data de início</Label>
-                <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                <Input
+                  type="text"
+                  placeholder="DD-MM-AAAA"
+                  value={startDateDisplay}
+                  onChange={e => {
+                    setStartDateDisplay(e.target.value)
+                    const iso = parseDMY(e.target.value)
+                    if (iso) setStartDate(iso)
+                  }}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Período</Label>
@@ -286,7 +316,16 @@ export function BulkAssignmentModal({ open, onOpenChange, teams, sites, equipmen
               </div>
               <div className="space-y-1.5">
                 <Label>Data de fim</Label>
-                <Input type="date" value={endDate} min={startDate} onChange={e => setEndDate(e.target.value)} />
+                <Input
+                  type="text"
+                  placeholder="DD-MM-AAAA"
+                  value={endDateDisplay}
+                  onChange={e => {
+                    setEndDateDisplay(e.target.value)
+                    const iso = parseDMY(e.target.value)
+                    if (iso) setEndDate(iso)
+                  }}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Período</Label>
