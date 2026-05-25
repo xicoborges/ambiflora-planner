@@ -11,6 +11,9 @@ const font = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Ambiflora — Planeamento",
   description: "Planeamento de equipas, equipamentos e obras",
+  icons: {
+    apple: '/apple-icon',
+  },
 };
 
 export default function RootLayout({
