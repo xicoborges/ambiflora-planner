@@ -56,10 +56,4 @@ create policy "acesso_autenticado_ae" on assignment_equipment
   using (auth.role() = 'authenticated')
   with check (auth.role() = 'authenticated');
 
--- RESPONSAVEIS (criada após o schema inicial — garantir RLS ativo)
-alter table if exists responsaveis enable row level security;
-drop policy if exists "acesso_anonimo_responsaveis" on responsaveis;
-create policy "acesso_autenticado_responsaveis" on responsaveis
-  for all
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+-- RESPONSAVEIS: tabela criada em 003_fix_schema.sql — RLS tratado aí.
