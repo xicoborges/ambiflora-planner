@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, Wrench, MapPin, UsersRound, CalendarDays, BarChart3, Menu, Leaf, LogOut, UserCog, LayoutDashboard } from 'lucide-react'
+import { Users, Wrench, MapPin, UsersRound, CalendarDays, BarChart3, Menu, Leaf, LogOut, UserCog, LayoutDashboard, Settings } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,7 @@ const navItems = [
   { href: '/obras', label: 'Obras', icon: MapPin },
   { href: '/equipas', label: 'Equipas', icon: UsersRound },
   { href: '/relatorios', label: 'Relatórios', icon: BarChart3 },
+  { href: '/configuracoes', label: 'Configurações', icon: Settings },
 ]
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
